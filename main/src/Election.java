@@ -3,37 +3,37 @@ import java.util.List;
 
 public class Election {
 
-    public String electionCode;
+    public ElectionId electionid;
     public Date date;
-    public List<String> participants;
+    public List<Voter> participants;
 
-    public Election(String electionCode, Date date, List<String> participants) {
-        this.electionCode = electionCode;
+    public Election(ElectionId electionid, Date date, List<Voter> participants) {
+        this.electionid = electionid;
         this.date = date;
         this.participants = participants;
     }
 
-    public void setElectionCode(String electionCode) {
-        this.electionCode = electionCode;
+    public void setElectionid(ElectionId electionid) {
+        this.electionid = electionid;
     }
 
     public void setDate(Date date) {
         this.date = date;
     }
 
-    public void setParticipants(List<String> participants) {
+    public void setParticipants(List<Voter> participants) {
         this.participants = participants;
     }
 
-    public String getElectionCode() {
-        return electionCode;
+    public ElectionId getElectionid() {
+        return electionid;
     }
 
     public Date getDate() {
         return date;
     }
 
-    public List<String> getParticipants() {
+    public List<Voter> getParticipants() {
         return participants;
     }
 }
