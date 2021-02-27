@@ -7,7 +7,6 @@ public class Person {
     public int age;
     public Boolean residentForAMonth;
     public Boolean felony;
-    public Boolean allowedVoter;
 
     public Person(String firstName, String lastName, String email, Boolean citizenship, int age, Boolean residentForAMonth, Boolean felony) {
         this.firstName = firstName;
@@ -17,15 +16,6 @@ public class Person {
         this.age = age;
         this.residentForAMonth = residentForAMonth;
         this.felony = felony;
-        allowedVoter = age >= 18 && !felony && citizenship && residentForAMonth;
-    }
-
-    public Boolean getAllowedVoter() {
-        return allowedVoter;
-    }
-
-    public void setAllowedVoter(Boolean allowedVoter) {
-        this.allowedVoter = allowedVoter;
     }
 
     public void setFirstName(String firstName) {
