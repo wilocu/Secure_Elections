@@ -13,6 +13,9 @@ public class Main {
     //list of all nonvoters
     public ArrayList<NonVoter> nonVoters = new ArrayList<NonVoter>();
 
+    //Data writer to handle writing to DynamoDB
+    public static DataWriter dataWriter = new DataWriter();
+
     public static void main(String[] args){
         try {
             Main program = new Main();
@@ -131,6 +134,7 @@ public class Main {
         Date date = new Date();
 
         Account user1 = new Account(regNumber, username, password, question1, date);
+        dataWriter.writeToTable(user1);
         accounts.add(user1);
         System.out.println("Congratulations! Your account was created successfully!");
 
