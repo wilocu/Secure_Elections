@@ -7,6 +7,7 @@ import com.amazonaws.services.dynamodbv2.document.*;
 import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.*;
+import com.amazonaws.services.dynamodbv2.xspec.S;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonSerializer;
@@ -49,6 +50,28 @@ public class DataWriter {
         ScanRequest scanRequest = new ScanRequest()
                 .withTableName(TABLE)
                 .withFilterExpression("#username = :usernameValue AND #password = :passwordValue")
+                .withExpressionAttributeNames(attributeNames)
+                .withExpressionAttributeValues(attributeValues);
+
+        ScanResult scanResult = dbClient.scan(scanRequest);
+
+        if(scanResult.getItems().size() > 0)
+            return true;
+
+        return false;
+    }
+
+    public boolean readFromTable(String username)
+    {
+        Map<String, String> attributeNames = new HashMap<>();
+        attributeNames.put("#username", "username");
+
+        Map<String, AttributeValue> attributeValues = new HashMap<>();
+        attributeValues.put(":usernameValue", new AttributeValue().withS(username));
+
+        ScanRequest scanRequest = new ScanRequest()
+                .withTableName(TABLE)
+                .withFilterExpression("#username = :usernameValue")
                 .withExpressionAttributeNames(attributeNames)
                 .withExpressionAttributeValues(attributeValues);
 

@@ -124,14 +124,30 @@ public class Main {
      * a Security Question, and date.
      */
     public void createAccount(){
+        String username = "";
+        String password = "";
+        boolean accountAlreadyExists = true;
+
         System.out.println("---------------CREATE ACCOUNT----------------");
         Scanner scan = new Scanner(System.in);
 
-        System.out.println("Enter a username for your account: ");
-        String username = scan.nextLine();
+        while(accountAlreadyExists) {
+            System.out.println("Enter a username for your account: ");
+            username = scan.nextLine();
 
-        System.out.println("Enter a password for your account: ");
-        String password = scan.nextLine();
+            System.out.println("Enter a password for your account: ");
+            password = scan.nextLine();
+
+            if(dataWriter.readFromTable(username))
+            {
+                System.out.println("An account with that username already exists.");
+                System.out.println("Try again? y/n");
+                if(scan.nextLine().toLowerCase().equals("n"))
+                    return;
+            }else
+                accountAlreadyExists = false;
+
+        }
 
         RegistrationNumber regNumber = new RegistrationNumber("000000001");
 
