@@ -133,7 +133,7 @@ public class Main {
             {
                 System.out.println("An account with that username already exists.");
                 System.out.println("Try again? y/n");
-                if(scan.nextLine().toLowerCase().equals("n"))
+                if(scan.nextLine().equalsIgnoreCase("n"))
                     return;
             }else
                 accountAlreadyExists = false;
