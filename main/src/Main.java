@@ -102,15 +102,6 @@ public class Main {
                 return login;
             }
 
-//            for (Account acc : accounts) {
-//                if (username.equals(acc.getUsername()) && password.equals(acc.getPassword())) {
-//                    System.out.println("Logged in successfully.");
-//                    System.out.println("Welcome " + acc.getUsername());
-//                    login = true;
-//                    return login;
-//                }
-//            }
-
             tries += 1;
             System.out.println("This combination of Username and Password was not found. Please try again.");
         }

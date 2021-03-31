@@ -32,12 +32,13 @@ public class DataWriter {
         this.dynamoDB = new DynamoDB(dbClient);
     }
 
-    public void printTables(){
-        Table table = dynamoDB.getTable(TABLE);
-        Item item = table.getItem("id", 1);
-        System.out.println(item.toJSONPretty());
-    }
-
+    /**
+     * Helper function to check if a given username and password match an entry in the table.
+     * Called from Main when logging in as a user.
+     * @param username
+     * @param password
+     * @return
+     */
     public boolean readFromTable(String username, String password){
         Map<String, String> attributeNames = new HashMap<>();
         attributeNames.put("#username", "username");
@@ -61,6 +62,12 @@ public class DataWriter {
         return false;
     }
 
+    /**
+     * Helper function to determine whether a username exists in the table.
+     * Called from Main when making a new account; We don't want duplicate usernames!
+     * @param username
+     * @return
+     */
     public boolean readFromTable(String username)
     {
         Map<String, String> attributeNames = new HashMap<>();
@@ -83,6 +90,10 @@ public class DataWriter {
         return false;
     }
 
+    /**
+     * Given an account, write it to the database.
+     * @param account
+     */
     public void writeToTable(Account account){
         Item accountItem = new Item()
                 .withString("id", UUID.randomUUID().toString())
