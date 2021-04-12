@@ -60,16 +60,7 @@ public class Main {
                 boolean loginSuccessful = program.login();
 
                 if(loginSuccessful){
-                    System.out.println("Enter (1) to register for an election.\n" +
-                        "Enter (2) to vote.");
-                    input = parseInt(scan.nextLine());
-                    if(input == 1){
-                        program.registerForElection();
-                    }else if(input == 2){
-                        program.voting();
-                    }else{
-                        System.out.println(input + " is not a valid option.");
-                    }
+                    loggedInState(program);
                 }
 
             } else if (input == 2) {
@@ -80,6 +71,32 @@ public class Main {
             }
         }catch(Exception e){
             System.out.println(e.getMessage());
+        }
+    }
+
+    public static void loggedInState(Main program){
+        Scanner scan = new Scanner(System.in);
+        while(true){
+            System.out.println("You are logged in.\n" +
+                               "-----------------------");
+            System.out.println("Enter (1) to register for an election.\n" +
+                    "Enter (2) to vote.\n" +
+                    "Enter (3) to view your profile.\n" +
+                    "Enter (4) to log out.\n");
+            int input = parseInt(scan.nextLine());
+            if(input == 1){
+                program.registerForElection();
+            }else if(input == 2){
+                program.voting();
+            }else if(input == 3){
+                //TODO
+            }else if(input == 4){
+                System.out.println("Logging out...");
+                return;
+            }
+            else{
+                System.out.println(input + " is not a valid option.");
+            }
         }
     }
 
