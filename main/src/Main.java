@@ -171,55 +171,68 @@ public class Main {
     }
 
     public boolean voterRegistration() {
-        System.out.println("-------------VOTER REGISTRATION INFO-------------------");
-        //Person person1 = new Person();
-        Scanner scan = new Scanner(System.in);
+        while(true) {
+            System.out.println("-------------VOTER REGISTRATION INFO-------------------");
+            //Person person1 = new Person();
+            Scanner scan = new Scanner(System.in);
 
-        System.out.println("Enter your first name: ");
-        String fName = scan.nextLine();
+            System.out.println("Enter your first name: ");
+            String fName = scan.nextLine();
 
-        System.out.println("Enter your last name: ");
-        String lName = scan.nextLine();
+            System.out.println("Enter your last name: ");
+            String lName = scan.nextLine();
 
-        //System.out.println("Enter your date of birth (DD/MM/YYYY): ");
-        System.out.println("Enter your age: ");
-        int age = parseInt(scan.nextLine());
+            //System.out.println("Enter your date of birth (DD/MM/YYYY): ");
+            System.out.println("Enter your age: ");
+            int age = parseInt(scan.nextLine());
 
-        System.out.println("Enter your email address: ");
-        String email = scan.nextLine();
+            System.out.println("Enter your email address: ");
+            String email = scan.nextLine();
 
-        System.out.println("Are you a United States citizen?");
-        String c = scan.nextLine();
-        boolean citizen = false;
-        //if person answers yes, return true, otherwise leave at false
-        if(c.equalsIgnoreCase("yes")){
-            citizen = true;
-        }
+            System.out.println("Are you a United States citizen?");
+            String c = scan.nextLine();
+            boolean citizen = false;
+            //if person answers yes, return true, otherwise leave at false
+            if (c.equalsIgnoreCase("yes")) {
+                citizen = true;
+            }
 
-        //change logic so user inputs a date and we calculate it
-        System.out.println("Have you lived in NY state for at least 1 month?");
-        String r = scan.nextLine();
-        boolean residency = false;
-        if(r.equalsIgnoreCase("yes")){
-            residency = true;
-        }
+            //change logic so user inputs a date and we calculate it
+            System.out.println("Have you lived in NY state for at least 1 month?");
+            String r = scan.nextLine();
+            boolean residency = false;
+            if (r.equalsIgnoreCase("yes")) {
+                residency = true;
+            }
 
-        System.out.println("Have you ever been convicted of a felony?");
-        String f = scan.nextLine();
-        boolean felon = false;
-        if(f.equalsIgnoreCase("yes")){
-            felon = true;
-        }
+            System.out.println("Have you ever been convicted of a felony?");
+            String f = scan.nextLine();
+            boolean felon = false;
+            if (f.equalsIgnoreCase("yes")) {
+                felon = true;
+            }
 
-        Person person1 = new Person(fName, lName, email, citizen, age, residency, felon);
+            System.out.println("You have entered: ");
+            System.out.printf("- First Name: %s\n", fName);
+            System.out.printf("- Last Name: %s\n", lName);
+            System.out.printf("- Age: %d\n", age);
+            System.out.printf("- Email: %s\n", email);
+            System.out.printf("- Citizenship: %b\n", citizen);
+            System.out.printf("- Resident of NY: %b\n", residency);
+            System.out.printf("- Convicted of Felony: %b\n\n", felon);
+            System.out.println("Are these answers correct? y/n");
+            if(scan.nextLine().equalsIgnoreCase("y")){
+                Person person1 = new Person(fName, lName, email, citizen, age, residency, felon);
 
-        //persons get sorted into the voter or nonvoter lists
-        if(person1.getAge() >= 18 && citizen && residency && !felon){
-            Voter voter1 = new Voter(person1);
-            return true;
-        }else{
-            NonVoter nonVoter1 = new NonVoter(person1);
-            return false;
+                //persons get sorted into the voter or nonvoter lists
+                if(person1.getAge() >= 18 && citizen && residency && !felon){
+                    Voter voter1 = new Voter(person1);
+                    return true;
+                }else {
+                    NonVoter nonVoter1 = new NonVoter(person1);
+                    return false;
+                }
+            }
         }
     }
 
