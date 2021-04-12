@@ -7,13 +7,15 @@ public class Account {
     public String password;
     public SecurityQuestion question;
     public Date dateOfCreation;
+    public boolean voter;
 
-    public Account(RegistrationNumber number, String username, String password, SecurityQuestion question, Date dateOfCreation) {
+    public Account(RegistrationNumber number, String username, String password, SecurityQuestion question, Date dateOfCreation, boolean voter) {
         this.number = number;
         this.username = username;
         this.password = password;
         this.question = question;
         this.dateOfCreation = dateOfCreation;
+        this.voter = voter;
     }
 
     public void setNumber(RegistrationNumber number) {
@@ -55,4 +57,8 @@ public class Account {
     public Date getDateOfCreation() {
         return dateOfCreation;
     }
+
+    public boolean isVoter() { return voter; }
+
+    public void setVoter(boolean voter) { this.voter = voter; }
 }

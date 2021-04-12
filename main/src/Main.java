@@ -129,6 +129,18 @@ public class Main {
             System.out.println("Enter a password for your account: ");
             password = scan.nextLine();
 
+            boolean passwordNotConfirmed = true;
+            while(passwordNotConfirmed){
+                System.out.println("Confirm your password: ");
+                String confirmPassword = scan.nextLine();
+                if(confirmPassword.equals(password))
+                    passwordNotConfirmed = false;
+                else {
+                    System.out.println("Passwords do not match. Try again? y/n");
+                    if(scan.nextLine().equalsIgnoreCase("n"))
+                        return;
+                }
+            }
             if(dataWriter.readFromTable(username))
             {
                 System.out.println("An account with that username already exists.");
@@ -149,16 +161,16 @@ public class Main {
 
         Date date = new Date();
 
-        Account user1 = new Account(regNumber, username, password, question1, date);
-        dataWriter.writeToTable(user1);
-        accounts.add(user1);
         System.out.println("Congratulations! Your account was created successfully!");
 
-        voterRegistration();
+        boolean regSuccess = voterRegistration();
+        Account user1 = new Account(regNumber, username, password, question1, date, regSuccess);
+        dataWriter.writeToTable(user1);
+        accounts.add(user1);
 
     }
 
-    public void voterRegistration() {
+    public boolean voterRegistration() {
         System.out.println("-------------VOTER REGISTRATION INFO-------------------");
         //Person person1 = new Person();
         Scanner scan = new Scanner(System.in);
@@ -204,8 +216,10 @@ public class Main {
         //persons get sorted into the voter or nonvoter lists
         if(person1.getAge() >= 18 && citizen && residency && !felon){
             Voter voter1 = new Voter(person1);
+            return true;
         }else{
             NonVoter nonVoter1 = new NonVoter(person1);
+            return false;
         }
     }
 

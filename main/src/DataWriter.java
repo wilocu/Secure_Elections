@@ -102,7 +102,8 @@ public class DataWriter {
                 .withString("password", account.password)
                 .withString("question", account.question.question)
                 .withString("answer", account.question.answer)
-                .withString("dateOfCreation", account.dateOfCreation.toString());
+                .withString("dateOfCreation", account.dateOfCreation.toString())
+                .withString("voter", Boolean.toString(account.voter));
 
         dynamoDB.getTable(TABLE).putItem(accountItem);
     }
