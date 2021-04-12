@@ -52,11 +52,15 @@ public class Main {
 
             Scanner scan = new Scanner(System.in);
             System.out.println("Election Portal!");
-            System.out.println("Enter (1) to log in, or. \n" +
+            System.out.println("Enter (0) to exit\n" +
+                    "Enter (1) to log in, or. \n" +
                 "Enter (2) to create an account.");
 
             int input = parseInt(scan.nextLine());
-            if (input == 1) {
+            if(input == 0){
+                return;
+            }
+            else if (input == 1) {
                 boolean loginSuccessful = program.login();
 
                 if(loginSuccessful){
@@ -79,17 +83,21 @@ public class Main {
         while(true){
             System.out.println("You are logged in.\n" +
                                "-----------------------");
-            System.out.println("Enter (1) to register for an election.\n" +
+            System.out.println("Enter (0) to exit\n" +
+                    "Enter (1) to register for an election.\n" +
                     "Enter (2) to vote.\n" +
                     "Enter (3) to view your profile.\n" +
                     "Enter (4) to log out.\n");
             int input = parseInt(scan.nextLine());
-            if(input == 1){
+            if(input == 0){
+                return;
+            }
+            else if(input == 1){
                 program.registerForElection();
             }else if(input == 2){
                 program.voting();
             }else if(input == 3){
-                //TODO
+                program.profile();
             }else if(input == 4){
                 System.out.println("Logging out...");
                 return;
@@ -253,17 +261,42 @@ public class Main {
         }
     }
 
+    public void profile(){
+        System.out.println("----------------Profile---------------");;
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Enter (0) to exit\n" +
+                "Enter (1) to change username.\n" +
+                "Enter (2) to change password.\n" +
+                "Enter (3) to view your requirements.\n" +
+                "Enter (4) to go back.\n");
+        int input = parseInt(scan.nextLine());
+        if(input == 0){
+            return;
+        }
+        else if(input == 1){
+            //todo
+        }else if(input == 2){
+            //todo
+        }else if(input == 3){
+
+        }else if(input == 4){
+            System.out.println("");
+        }else{
+            System.out.println(input + " is not a valid input. ");
+        }
+    }
+
     public void registerForElection(){
         System.out.println("----------------REGISTER FOR AN ELECTION---------------");;
         Scanner scan = new Scanner(System.in);
         System.out.println("Enter the number of the election you want to register for:");
-        System.out.println("Presidential 2024 Election .......... 1\n" +
-                           "Other Election ...................... 2\n");
+        System.out.println("Enter (1) to register for the Presidential 2024 Election\n" +
+                            "Enter (2) to go back\n");
         int input = parseInt(scan.nextLine());
         if(input == 1){
-
+            return;
         }else if(input == 2){
-
+            return;
         }else{
             System.out.println(input + " is not a valid input. ");
         }
