@@ -287,7 +287,7 @@ public class Main {
             } else if (input == 2) {
                 updatePassword();
             } else if (input == 3) {
-
+                viewVoterReg();
             } else if (input == 4) {
                 System.out.println("");
                 return;
@@ -295,6 +295,11 @@ public class Main {
                 System.out.println(input + " is not a valid input. ");
             }
         }
+    }
+
+    public void viewVoterReg(){
+        System.out.println("Your voter registration info: ");
+        dataWriter.viewVoterRegistration(this.currentID);
     }
 
     public void updatePassword(){

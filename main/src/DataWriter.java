@@ -4,6 +4,7 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.*;
+import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.*;
@@ -130,6 +131,18 @@ public class DataWriter {
                 .withUpdateExpression("set password = :password")
                 .withValueMap(new ValueMap().withString(":password", newPassword));
         dynamoDB.getTable(ACCOUNT_TABLE).updateItem(updateItemSpec);
+    }
+
+    public void viewVoterRegistration(String id){
+        GetItemSpec getItemSpec = new GetItemSpec().withPrimaryKey("id", id);
+        Item item = dynamoDB.getTable(REGISTRATION_TABLE).getItem(getItemSpec);
+        System.out.printf("- First Name: %s\n", item.get("fname").toString());
+        System.out.printf("- Last Name: %s\n", item.get("lname").toString());
+        System.out.printf("- Age: %s\n", item.get("age").toString());
+        System.out.printf("- Email: %s\n", item.get("email").toString());
+        System.out.printf("- United States Citizen: %s\n", item.get("citizen").toString());
+        System.out.printf("- Resident of NY State: %s\n", item.get("resident").toString());
+        System.out.printf("- Convicted of felony: %s\n\n", item.get("felon").toString());
     }
 
 
