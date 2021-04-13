@@ -1,6 +1,6 @@
-import org.joda.time.DateTime;
-
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.Scanner;
 
 import static java.lang.Integer.parseInt;
 
@@ -18,7 +18,11 @@ public class Main {
     //Data writer to handle writing to DynamoDB
     public static DataWriter dataWriter = new DataWriter();
 
-    public static void main(String[] args){
+    public static void main(String[] args) {
+        start();
+    }
+
+    public static void start() {
         try {
             Main program = new Main();
 
@@ -54,18 +58,17 @@ public class Main {
 
             Scanner scan = new Scanner(System.in);
             System.out.println("Election Portal!");
-            System.out.println("Enter (0) to exit\n" +
-                    "Enter (1) to log in, or. \n" +
-                "Enter (2) to create an account.");
+            System.out.println("Enter (0) to exit.\n" +
+                    "Enter (1) to log in. \n" +
+                    "Enter (2) to create an account.");
 
             int input = parseInt(scan.nextLine());
-            if(input == 0){
+            if (input == 0) {
                 return;
-            }
-            else if (input == 1) {
+            } else if (input == 1) {
                 boolean loginSuccessful = program.login();
 
-                if(loginSuccessful){
+                if (loginSuccessful) {
                     loggedInState(program);
                 }
 
@@ -73,57 +76,69 @@ public class Main {
                 program.createAccount();
             } else {
                 System.out.println(input + " is not a valid input. If you need assistance," +
-                    " type \'HELP\'.");
+                        " type \'HELP\'.");
             }
-        }catch(Exception e){
+        } catch (Exception e) {
             System.out.println(e.getMessage());
         }
     }
 
-    public static void loggedInState(Main program){
+    public static void loggedInState(Main program) {
         Scanner scan = new Scanner(System.in);
-        while(true){
+        while (true) {
             System.out.println("You are logged in.\n" +
-                               "-----------------------");
-            System.out.println("Enter (0) to exit\n" +
+                    "-----------------------");
+            System.out.println("Enter (0) to exit.\n" +
                     "Enter (1) to register for an election.\n" +
                     "Enter (2) to vote.\n" +
                     "Enter (3) to view your profile.\n" +
-                    "Enter (4) to log out.\n");
+                    "Enter (4) to view results.\n" +
+                    "Enter (5) to log out.\n");
             int input = parseInt(scan.nextLine());
-            if(input == 0){
+            if (input == 0) {
                 return;
-            }
-            else if(input == 1){
+            } else if (input == 1) {
                 program.registerForElection();
-            }else if(input == 2){
+            } else if (input == 2) {
                 program.voting();
-            }else if(input == 3){
+            } else if (input == 3) {
                 program.profile();
-            }else if(input == 4){
+            } else if (input == 4) {
+                program.viewResult();
+            } else if (input == 5) {
                 System.out.println("Logging out...");
-                return;
-            }
-            else{
+                start();
+            } else {
                 System.out.println(input + " is not a valid option.");
             }
         }
     }
 
-    public boolean login(){
+    private void viewResult() {
+        Scanner scan = new Scanner(System.in);
+        System.out.println("----------------Results-------------------");
+        System.out.println("Enter (1) to go back;");
+        int input = parseInt(scan.nextLine());
+        if (input == 1) {
+            System.out.println("");
+        } else {
+            System.out.println(input + " is not a valid input. ");
+        }
+    }
+
+    public boolean login() {
         boolean login = false;
         int tries = 0; //get 3 tries to log in
         System.out.println("----------------LOGIN-------------------");
         Scanner scan = new Scanner(System.in);
-        while(tries < 3) {
+        while (tries < 3) {
             System.out.println("Enter your username: ");
             String username = scan.nextLine();
             System.out.println("Enter your password: ");
             String password = scan.nextLine();
 
             String accountID = dataWriter.readFromTable(username, password);
-            if(accountID != null)
-            {
+            if (accountID != null) {
                 this.currentID = accountID;
                 System.out.println("Logged in successfully.");
                 System.out.println("Welcome " + username);
@@ -135,7 +150,7 @@ public class Main {
             System.out.println("This combination of Username and Password was not found. Please try again.");
         }
         System.out.println("You have reached the maximum number of login attempts." +
-            "Please try again later.");
+                "Please try again later.");
         return login;
     }
 
@@ -143,7 +158,7 @@ public class Main {
      * An account is created with Registration Number, username, password,
      * a Security Question, and date.
      */
-    public void createAccount(){
+    public void createAccount() {
         String username = "";
         String password = "";
         boolean accountAlreadyExists = true;
@@ -151,7 +166,7 @@ public class Main {
         System.out.println("---------------CREATE ACCOUNT----------------");
         Scanner scan = new Scanner(System.in);
 
-        while(accountAlreadyExists) {
+        while (accountAlreadyExists) {
             System.out.println("Enter a username for your account: ");
             username = scan.nextLine();
 
@@ -159,24 +174,23 @@ public class Main {
             password = scan.nextLine();
 
             boolean passwordNotConfirmed = true;
-            while(passwordNotConfirmed){
+            while (passwordNotConfirmed) {
                 System.out.println("Confirm your password: ");
                 String confirmPassword = scan.nextLine();
-                if(confirmPassword.equals(password))
+                if (confirmPassword.equals(password))
                     passwordNotConfirmed = false;
                 else {
                     System.out.println("Passwords do not match. Try again? y/n");
-                    if(scan.nextLine().equalsIgnoreCase("n"))
+                    if (scan.nextLine().equalsIgnoreCase("n"))
                         return;
                 }
             }
-            if(dataWriter.readFromTable(username))
-            {
+            if (dataWriter.readFromTable(username)) {
                 System.out.println("An account with that username already exists.");
                 System.out.println("Try again? y/n");
-                if(scan.nextLine().equalsIgnoreCase("n"))
+                if (scan.nextLine().equalsIgnoreCase("n"))
                     return;
-            }else
+            } else
                 accountAlreadyExists = false;
 
         }
@@ -203,7 +217,7 @@ public class Main {
     }
 
     public Registration voterRegistration() {
-        while(true) {
+        while (true) {
             System.out.println("-------------VOTER REGISTRATION INFO-------------------");
             //Person person1 = new Person();
             Scanner scan = new Scanner(System.in);
@@ -253,16 +267,16 @@ public class Main {
             System.out.printf("- Resident of NY: %b\n", residency);
             System.out.printf("- Convicted of Felony: %b\n\n", felon);
             System.out.println("Are these answers correct? y/n");
-            if(scan.nextLine().equalsIgnoreCase("y")){
+            if (scan.nextLine().equalsIgnoreCase("y")) {
                 Person person1 = new Person(fName, lName, email, citizen, age, residency, felon);
                 Registration registration = new Registration(fName, lName, age, email, citizen, residency, felon);
 
                 //persons get sorted into the voter or nonvoter lists
-                if(person1.getAge() >= 18 && citizen && residency && !felon){
+                if (person1.getAge() >= 18 && citizen && residency && !felon) {
                     Voter voter1 = new Voter(person1);
                     registration.registrationSuccess = true;
                     return registration;
-                }else {
+                } else {
                     NonVoter nonVoter1 = new NonVoter(person1);
                     registration.registrationSuccess = false;
                     return registration;
@@ -271,8 +285,8 @@ public class Main {
         }
     }
 
-    public void profile(){
-        while(true) {
+    public void profile() {
+        while (true) {
             System.out.println("----------------Profile---------------");
             Scanner scan = new Scanner(System.in);
             System.out.println("Enter (0) to exit\n" +
@@ -298,24 +312,24 @@ public class Main {
         }
     }
 
-    public void viewVoterReg(){
+    public void viewVoterReg() {
         System.out.println("Your voter registration info: ");
         dataWriter.viewVoterRegistration(this.currentID);
     }
 
-    public void updatePassword(){
+    public void updatePassword() {
         Scanner scan = new Scanner(System.in);
         String newPassword = "";
-        while(true){
+        while (true) {
             System.out.println("Enter a new password. Enter 'q' to cancel.");
             newPassword = scan.nextLine();
-            if(newPassword.equalsIgnoreCase("q"))
+            if (newPassword.equalsIgnoreCase("q"))
                 break;
-            else{
-                while(true) {
+            else {
+                while (true) {
                     System.out.println("Re-enter password to confirm.");
                     String confirmPassword = scan.nextLine();
-                    if(confirmPassword.equalsIgnoreCase("q")){
+                    if (confirmPassword.equalsIgnoreCase("q")) {
                         System.out.println("Transaction Cancelled.");
                         return;
                     }
@@ -330,18 +344,18 @@ public class Main {
         }
     }
 
-    public void updateUsername(){
+    public void updateUsername() {
         Scanner scan = new Scanner(System.in);
         String newName = "";
-        while(true){
+        while (true) {
             System.out.println("Enter a new username. Enter 'q' to cancel.");
             newName = scan.nextLine();
-            if(newName.equalsIgnoreCase("q"))
+            if (newName.equalsIgnoreCase("q"))
                 break;
-            else{
+            else {
                 System.out.println("You have entered: " + newName);
                 System.out.println("Is this correct? y/n");
-                if(scan.nextLine().equalsIgnoreCase("y")) {
+                if (scan.nextLine().equalsIgnoreCase("y")) {
                     dataWriter.updateUsername(newName, this.currentID);
                     break;
                 }
@@ -349,28 +363,25 @@ public class Main {
         }
     }
 
-    public void registerForElection(){
-        System.out.println("----------------REGISTER FOR AN ELECTION---------------");;
+    public void registerForElection() {
+        System.out.println("----------------REGISTER FOR AN ELECTION---------------");
+        ;
         Scanner scan = new Scanner(System.in);
         System.out.println("Enter the number of the election you want to register for:");
         System.out.println("Enter (1) to register for the Presidential 2024 Election\n" +
-                            "Enter (2) to go back\n");
+                "Enter (2) to go back\n");
         int input = parseInt(scan.nextLine());
-        if(input == 1){
-            dataWriter.registerForElection(dataWriter.getElectionID("1"), this.currentID);
-        }else if(input == 2){
+        if (input == 1) {
             return;
-        }else{
+        } else if (input == 2) {
+            return;
+        } else {
             System.out.println(input + " is not a valid input. ");
         }
     }
 
 
-
-
-
-    public void voting(){
+    public void voting() {
 
     }
-
 }
