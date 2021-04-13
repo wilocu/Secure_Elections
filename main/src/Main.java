@@ -117,6 +117,7 @@ public class Main {
     private void viewResult() {
         Scanner scan = new Scanner(System.in);
         System.out.println("----------------Results-------------------");
+        dataWriter.viewElectionResults(this.currentID);
         System.out.println("Enter (1) to go back;");
         int input = parseInt(scan.nextLine());
         if (input == 1) {

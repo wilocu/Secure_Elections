@@ -10,9 +10,7 @@ import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.*;
 import com.amazonaws.services.dynamodbv2.xspec.UpdateItemExpressionSpec;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
+import java.util.*;
 
 public class DataWriter {
     private AmazonDynamoDB dbClient;
@@ -181,6 +179,26 @@ public class DataWriter {
         System.out.printf("- United States Citizen: %s\n", item.get("citizen").toString());
         System.out.printf("- Resident of NY State: %s\n", item.get("resident").toString());
         System.out.printf("- Convicted of felony: %s\n\n", item.get("felon").toString());
+    }
+
+    public void viewElectionResults(String id){
+        GetItemSpec getItemSpec = new GetItemSpec().withPrimaryKey("id", id);
+        Item item = dynamoDB.getTable(ACCOUNT_TABLE).getItem(getItemSpec);
+        Map<String, Boolean> electionMap = item.getMap("elections");
+        String[] electionIDs = electionMap.keySet().toArray(new String[electionMap.size()]);
+        for(int i = 0; i < electionIDs.length; i++){
+            GetItemSpec getElectionSpec = new GetItemSpec().withPrimaryKey("electionID", electionIDs[i]);
+            Item electionItem = dynamoDB.getTable(ELECTIONS_TABLE).getItem(getElectionSpec);
+            System.out.printf("Election #%s\n", electionItem.get("id").toString());
+            Map<String, Integer> resultsMap = electionItem.getMap("results");
+            Iterator mapIterator = resultsMap.entrySet().iterator();
+            while (mapIterator.hasNext()){
+                Map.Entry element = (Map.Entry)mapIterator.next();
+                System.out.println("- Candidate: " + element.getKey().toString() + "\n-\tNumber of votes: " + element.getValue().toString());
+            }
+            System.out.println("");
+        }
+
     }
 
 
