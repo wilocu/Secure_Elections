@@ -4,17 +4,9 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.*;
-import com.amazonaws.services.dynamodbv2.document.spec.QuerySpec;
-import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.*;
-import com.amazonaws.services.dynamodbv2.xspec.S;
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.JsonSerializer;
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
@@ -22,7 +14,8 @@ public class DataWriter {
     private AmazonDynamoDB dbClient;
     private DynamoDB dynamoDB;
     private BasicAWSCredentials awsCredentials;
-    private String TABLE = "secure-elections-table";
+    private String ACCOUNT_TABLE = "secure-elections-table";
+    private String REGISTRATION_TABLE = "secure-elections-voters";
 
     public DataWriter() {
         this.awsCredentials = new BasicAWSCredentials("AKIA6L33Q4ZCSBIHY5VV", "tdU5bOVkkeKzDhV/hAxWgmONwYPbcGXdOX9SeMut");
@@ -49,7 +42,7 @@ public class DataWriter {
         attributeValues.put(":passwordValue", new AttributeValue().withS(password));
 
         ScanRequest scanRequest = new ScanRequest()
-                .withTableName(TABLE)
+                .withTableName(ACCOUNT_TABLE)
                 .withFilterExpression("#username = :usernameValue AND #password = :passwordValue")
                 .withExpressionAttributeNames(attributeNames)
                 .withExpressionAttributeValues(attributeValues);
@@ -77,7 +70,7 @@ public class DataWriter {
         attributeValues.put(":usernameValue", new AttributeValue().withS(username));
 
         ScanRequest scanRequest = new ScanRequest()
-                .withTableName(TABLE)
+                .withTableName(ACCOUNT_TABLE)
                 .withFilterExpression("#username = :usernameValue")
                 .withExpressionAttributeNames(attributeNames)
                 .withExpressionAttributeValues(attributeValues);
@@ -94,9 +87,10 @@ public class DataWriter {
      * Given an account, write it to the database.
      * @param account
      */
-    public void writeToTable(Account account){
+    public String writeToTable(Account account){
+        String accountID = UUID.randomUUID().toString();
         Item accountItem = new Item()
-                .withString("id", UUID.randomUUID().toString())
+                .withString("id", accountID)
                 .withString("number", account.number.id)
                 .withString("username", account.username)
                 .withString("password", account.password)
@@ -105,7 +99,21 @@ public class DataWriter {
                 .withString("dateOfCreation", account.dateOfCreation.toString())
                 .withString("voter", Boolean.toString(account.voter));
 
-        dynamoDB.getTable(TABLE).putItem(accountItem);
+        dynamoDB.getTable(ACCOUNT_TABLE).putItem(accountItem);
+        return accountID;
+    }
+
+    public void writeToTable(Registration registration){
+        Item registrationItem = new Item()
+                .withString("id", registration.registrationID)
+                .withString("fname", registration.fName)
+                .withString("lname", registration.lName)
+                .withInt("age", registration.age)
+                .withString("email", registration.email)
+                .withBoolean("citizen", registration.citizenship)
+                .withBoolean("resident", registration.residency)
+                .withBoolean("felon", registration.felony);
+        dynamoDB.getTable(REGISTRATION_TABLE).putItem(registrationItem);
     }
 
 

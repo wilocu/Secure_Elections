@@ -180,14 +180,15 @@ public class Main {
 
         System.out.println("Congratulations! Your account was created successfully!");
 
-        boolean regSuccess = voterRegistration();
-        Account user1 = new Account(regNumber, username, password, question1, date, regSuccess);
-        dataWriter.writeToTable(user1);
+        Registration newRegistration = voterRegistration();
+        Account user1 = new Account(regNumber, username, password, question1, date, newRegistration.registrationSuccess);
+        String newAccountID = dataWriter.writeToTable(user1);
         accounts.add(user1);
-
+        newRegistration.registrationID = newAccountID;
+        dataWriter.writeToTable(newRegistration);
     }
 
-    public boolean voterRegistration() {
+    public Registration voterRegistration() {
         while(true) {
             System.out.println("-------------VOTER REGISTRATION INFO-------------------");
             //Person person1 = new Person();
@@ -240,14 +241,17 @@ public class Main {
             System.out.println("Are these answers correct? y/n");
             if(scan.nextLine().equalsIgnoreCase("y")){
                 Person person1 = new Person(fName, lName, email, citizen, age, residency, felon);
+                Registration registration = new Registration(fName, lName, age, email, citizen, residency, felon);
 
                 //persons get sorted into the voter or nonvoter lists
                 if(person1.getAge() >= 18 && citizen && residency && !felon){
                     Voter voter1 = new Voter(person1);
-                    return true;
+                    registration.registrationSuccess = true;
+                    return registration;
                 }else {
                     NonVoter nonVoter1 = new NonVoter(person1);
-                    return false;
+                    registration.registrationSuccess = false;
+                    return registration;
                 }
             }
         }
