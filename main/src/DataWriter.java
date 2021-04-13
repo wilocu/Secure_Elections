@@ -4,7 +4,10 @@ import com.amazonaws.regions.Regions;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDB;
 import com.amazonaws.services.dynamodbv2.AmazonDynamoDBClientBuilder;
 import com.amazonaws.services.dynamodbv2.document.*;
+import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
+import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.*;
+import com.amazonaws.services.dynamodbv2.xspec.UpdateItemExpressionSpec;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -32,7 +35,7 @@ public class DataWriter {
      * @param password
      * @return
      */
-    public boolean readFromTable(String username, String password){
+    public String readFromTable(String username, String password){
         Map<String, String> attributeNames = new HashMap<>();
         attributeNames.put("#username", "username");
         attributeNames.put("#password", "password");
@@ -48,11 +51,10 @@ public class DataWriter {
                 .withExpressionAttributeValues(attributeValues);
 
         ScanResult scanResult = dbClient.scan(scanRequest);
-
         if(scanResult.getItems().size() > 0)
-            return true;
+            return scanResult.getItems().get(0).get("id").getS();
 
-        return false;
+        return null;
     }
 
     /**
@@ -114,6 +116,15 @@ public class DataWriter {
                 .withBoolean("resident", registration.residency)
                 .withBoolean("felon", registration.felony);
         dynamoDB.getTable(REGISTRATION_TABLE).putItem(registrationItem);
+    }
+
+    public void updateUsername(String oldName, String newName, String id){
+
+        UpdateItemSpec updateItemSpec= new UpdateItemSpec().withPrimaryKey("id", id)
+                .withUpdateExpression("set username = :newname")
+                .withValueMap(new ValueMap().withString(":newname", newName));
+        UpdateItemOutcome outcome = dynamoDB.getTable(ACCOUNT_TABLE).updateItem(updateItemSpec);
+        System.out.println(outcome.toString());
     }
 
 
