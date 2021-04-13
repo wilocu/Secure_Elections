@@ -1,6 +1,6 @@
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.Scanner;
+import org.joda.time.DateTime;
+
+import java.util.*;
 
 import static java.lang.Integer.parseInt;
 
@@ -357,7 +357,7 @@ public class Main {
                             "Enter (2) to go back\n");
         int input = parseInt(scan.nextLine());
         if(input == 1){
-            return;
+            dataWriter.registerForElection(dataWriter.getElectionID("1"), this.currentID);
         }else if(input == 2){
             return;
         }else{

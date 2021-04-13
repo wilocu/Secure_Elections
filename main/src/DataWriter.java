@@ -20,6 +20,7 @@ public class DataWriter {
     private BasicAWSCredentials awsCredentials;
     private String ACCOUNT_TABLE = "secure-elections-table";
     private String REGISTRATION_TABLE = "secure-elections-voters";
+    private String ELECTIONS_TABLE = "secure-elections-election";
 
     public DataWriter() {
         this.awsCredentials = new BasicAWSCredentials("AKIA6L33Q4ZCSBIHY5VV", "tdU5bOVkkeKzDhV/hAxWgmONwYPbcGXdOX9SeMut");
@@ -64,8 +65,7 @@ public class DataWriter {
      * @param username
      * @return
      */
-    public boolean readFromTable(String username)
-    {
+    public boolean readFromTable(String username) {
         Map<String, String> attributeNames = new HashMap<>();
         attributeNames.put("#username", "username");
 
@@ -80,10 +80,31 @@ public class DataWriter {
 
         ScanResult scanResult = dbClient.scan(scanRequest);
 
-        if(scanResult.getItems().size() > 0)
+        if (scanResult.getItems().size() > 0)
             return true;
 
         return false;
+    }
+
+    public String getElectionID(String id){
+        Map<String, String> attributeNames = new HashMap<>();
+        attributeNames.put("#id", "id");
+
+        Map<String, AttributeValue> attributeValues = new HashMap<>();
+        attributeValues.put(":id", new AttributeValue().withS(id));
+
+        ScanRequest scanRequest = new ScanRequest()
+                .withTableName(ELECTIONS_TABLE)
+                .withFilterExpression("#id = :id")
+                .withExpressionAttributeNames(attributeNames)
+                .withExpressionAttributeValues(attributeValues);
+
+        ScanResult scanResult = dbClient.scan(scanRequest);
+        if(scanResult.getItems().size() > 0){
+            return scanResult.getItems().get(0).get("electionID").getS().toString();
+        }
+
+        return null;
     }
 
     /**
@@ -117,6 +138,23 @@ public class DataWriter {
                 .withBoolean("resident", registration.residency)
                 .withBoolean("felon", registration.felony);
         dynamoDB.getTable(REGISTRATION_TABLE).putItem(registrationItem);
+    }
+
+    public void registerForElection(String electionID, String userID){
+        Map<String, Boolean> electionsList = dynamoDB.getTable(ACCOUNT_TABLE).getItem("id", userID).getMap("elections");
+        if(electionsList == null)
+            electionsList = new HashMap<>();
+
+        if(electionsList.containsKey(electionID))
+            System.out.println("You have already registered for this election.");
+        else{
+            electionsList.put(electionID, false);
+            UpdateItemSpec updateItemSpec = new UpdateItemSpec().withPrimaryKey("id", userID)
+                    .withUpdateExpression("set elections = :elections")
+                    .withValueMap(new ValueMap().withMap(":elections", electionsList));
+            dynamoDB.getTable(ACCOUNT_TABLE).updateItem(updateItemSpec);
+        }
+
     }
 
     public void updateUsername(String newName, String id){
