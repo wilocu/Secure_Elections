@@ -118,13 +118,18 @@ public class DataWriter {
         dynamoDB.getTable(REGISTRATION_TABLE).putItem(registrationItem);
     }
 
-    public void updateUsername(String oldName, String newName, String id){
-
+    public void updateUsername(String newName, String id){
         UpdateItemSpec updateItemSpec= new UpdateItemSpec().withPrimaryKey("id", id)
                 .withUpdateExpression("set username = :newname")
                 .withValueMap(new ValueMap().withString(":newname", newName));
-        UpdateItemOutcome outcome = dynamoDB.getTable(ACCOUNT_TABLE).updateItem(updateItemSpec);
-        System.out.println(outcome.toString());
+        dynamoDB.getTable(ACCOUNT_TABLE).updateItem(updateItemSpec);
+    }
+
+    public void updatePassword(String newPassword, String id){
+        UpdateItemSpec updateItemSpec = new UpdateItemSpec().withPrimaryKey("id", id)
+                .withUpdateExpression("set password = :password")
+                .withValueMap(new ValueMap().withString(":password", newPassword));
+        dynamoDB.getTable(ACCOUNT_TABLE).updateItem(updateItemSpec);
     }
 
 

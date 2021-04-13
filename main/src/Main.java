@@ -12,8 +12,6 @@ public class Main {
     public ArrayList<Voter> voters = new ArrayList<Voter>();
     //list of all nonvoters
     public ArrayList<NonVoter> nonVoters = new ArrayList<NonVoter>();
-    // The username of the person currently logged in.
-    public String currentUser = "";
     // The DynamoDB ID of the current user.
     public String currentID = "";
 
@@ -126,7 +124,6 @@ public class Main {
             String accountID = dataWriter.readFromTable(username, password);
             if(accountID != null)
             {
-                this.currentUser = username;
                 this.currentID = accountID;
                 System.out.println("Logged in successfully.");
                 System.out.println("Welcome " + username);
@@ -198,7 +195,6 @@ public class Main {
         Registration newRegistration = voterRegistration();
         Account user1 = new Account(regNumber, username, password, question1, date, newRegistration.registrationSuccess);
         String newAccountID = dataWriter.writeToTable(user1);
-        this.currentUser = username;
         this.currentID = newAccountID;
         accounts.add(user1);
         newRegistration.registrationID = newAccountID;
@@ -287,24 +283,9 @@ public class Main {
             if (input == 0) {
                 return;
             } else if (input == 1) {
-                String newName = "";
-                while(true){
-                    System.out.println("Enter a new username. Enter 'q' to cancel.");
-                    newName = scan.nextLine();
-                    if(newName.equalsIgnoreCase("q"))
-                        break;
-                    else{
-                        System.out.println("You have entered: " + newName);
-                        System.out.println("Is this correct? y/n");
-                        if(scan.nextLine().equalsIgnoreCase("y")) {
-                            dataWriter.updateUsername(currentUser, newName, this.currentID);
-                            currentUser = newName;
-                            break;
-                        }
-                    }
-                }
+                updateUsername();
             } else if (input == 2) {
-                //todo
+                updatePassword();
             } else if (input == 3) {
 
             } else if (input == 4) {
@@ -312,6 +293,52 @@ public class Main {
                 return;
             } else {
                 System.out.println(input + " is not a valid input. ");
+            }
+        }
+    }
+
+    public void updatePassword(){
+        Scanner scan = new Scanner(System.in);
+        String newPassword = "";
+        while(true){
+            System.out.println("Enter a new password. Enter 'q' to cancel.");
+            newPassword = scan.nextLine();
+            if(newPassword.equalsIgnoreCase("q"))
+                break;
+            else{
+                while(true) {
+                    System.out.println("Re-enter password to confirm.");
+                    String confirmPassword = scan.nextLine();
+                    if(confirmPassword.equalsIgnoreCase("q")){
+                        System.out.println("Transaction Cancelled.");
+                        return;
+                    }
+                    if (confirmPassword.equals(newPassword)) {
+                        dataWriter.updatePassword(newPassword, this.currentID);
+                        System.out.println("Password Changed!");
+                        return;
+                    } else
+                        System.out.println("Passwords did not match. Try again, or enter 'q' to cancel.");
+                }
+            }
+        }
+    }
+
+    public void updateUsername(){
+        Scanner scan = new Scanner(System.in);
+        String newName = "";
+        while(true){
+            System.out.println("Enter a new username. Enter 'q' to cancel.");
+            newName = scan.nextLine();
+            if(newName.equalsIgnoreCase("q"))
+                break;
+            else{
+                System.out.println("You have entered: " + newName);
+                System.out.println("Is this correct? y/n");
+                if(scan.nextLine().equalsIgnoreCase("y")) {
+                    dataWriter.updateUsername(newName, this.currentID);
+                    break;
+                }
             }
         }
     }
