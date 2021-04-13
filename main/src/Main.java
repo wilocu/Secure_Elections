@@ -199,6 +199,7 @@ public class Main {
         accounts.add(user1);
         newRegistration.registrationID = newAccountID;
         dataWriter.writeToTable(newRegistration);
+        loggedInState(this);
     }
 
     public Registration voterRegistration() {
