@@ -118,8 +118,12 @@ public class Main {
         Scanner scan = new Scanner(System.in);
         System.out.println("----------------Results-------------------");
         System.out.println("Enter (1) to go back;");
+        System.out.println("Enter (2) to go back;");
         int input = parseInt(scan.nextLine());
-        if (input == 1) {
+        if(input == 1){
+            //todo
+        }
+        else if (input == 2) {
             System.out.println("");
         } else {
             System.out.println(input + " is not a valid input. ");
