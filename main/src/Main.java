@@ -119,12 +119,8 @@ public class Main {
         System.out.println("----------------Results-------------------");
         dataWriter.viewElectionResults(this.currentID);
         System.out.println("Enter (1) to go back;");
-        System.out.println("Enter (2) to go back;");
         int input = parseInt(scan.nextLine());
-        if(input == 1){
-            //todo
-        }
-        else if (input == 2) {
+        if (input == 1) {
             System.out.println("");
         } else {
             System.out.println(input + " is not a valid input. ");
@@ -387,6 +383,23 @@ public class Main {
 
 
     public void voting() {
+        Scanner scan = new Scanner(System.in);
+        System.out.println("----------------voting-------------------");
+        dataWriter.printCandidates(this.currentID);
+        int input = parseInt(scan.nextLine());
+        if (input == 1 || input == 2) {
+            System.out.println("Confirm your vote? y/n");
+            String s = scan.next();
+            if(s.equalsIgnoreCase("n")){
+                voting();
+            }
+        }
+        else {
+            System.out.println("Invalid input");
+            voting();
+        }
+        System.out.println("Your vote has bee counted");
+        //TODO cast the vote
 
     }
 }

@@ -201,5 +201,27 @@ public class DataWriter {
 
     }
 
+    public void printCandidates(String id){
+        GetItemSpec getItemSpec = new GetItemSpec().withPrimaryKey("id", id);
+        Item item = dynamoDB.getTable(ACCOUNT_TABLE).getItem(getItemSpec);
+        Map<String, Boolean> electionMap = item.getMap("elections");
+        String[] electionIDs = electionMap.keySet().toArray(new String[electionMap.size()]);
+        for(int i = 0; i < electionIDs.length; i++){
+            GetItemSpec getElectionSpec = new GetItemSpec().withPrimaryKey("electionID", electionIDs[i]);
+            Item electionItem = dynamoDB.getTable(ELECTIONS_TABLE).getItem(getElectionSpec);
+            System.out.printf("Election #%s\n", electionItem.get("id").toString());
+            Map<String, Integer> resultsMap = electionItem.getMap("results");
+            Iterator mapIterator = resultsMap.entrySet().iterator();
+            int count = 1;
+            while (mapIterator.hasNext()){
+                Map.Entry element = (Map.Entry)mapIterator.next();
+                System.out.println("Enter (" + count + ") to vote for " + element.getKey().toString());
+                count++;
+            }
+            System.out.println("");
+        }
+
+    }
+
 
 }
