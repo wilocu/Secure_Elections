@@ -402,7 +402,6 @@ public class Main {
             voting();
         }
         System.out.println("Your vote has bee counted");
-        //TODO cast the vote
 
     }
 }
