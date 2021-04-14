@@ -240,7 +240,7 @@ public class Main {
             System.out.println("Enter your email address: ");
             String email = scan.nextLine();
 
-            System.out.println("Are you a United States citizen? y/n");
+            System.out.println("Are you a United States citizen? yes/no");
             String c = scan.nextLine();
             boolean citizen = false;
             //if person answers yes, return true, otherwise leave at false
@@ -249,14 +249,14 @@ public class Main {
             }
 
             //change logic so user inputs a date and we calculate it
-            System.out.println("Have you lived in NY state for at least 1 month? y/n");
+            System.out.println("Have you lived in NY state for at least 1 month? yes/no");
             String r = scan.nextLine();
             boolean residency = false;
             if (r.equalsIgnoreCase("yes") || c.equalsIgnoreCase("y")) {
                 residency = true;
             }
 
-            System.out.println("Have you ever been convicted of a felony? y/n");
+            System.out.println("Have you ever been convicted of a felony? yes/no");
             String f = scan.nextLine();
             boolean felon = false;
             if (f.equalsIgnoreCase("yes") || c.equalsIgnoreCase("y")) {
