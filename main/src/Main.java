@@ -392,6 +392,9 @@ public class Main {
             String s = scan.next();
             if(s.equalsIgnoreCase("n")){
                 voting();
+            }else{
+                // election id can be hardcoded for now. Need to change in future.
+                dataWriter.castVote(this.currentID, dataWriter.getElectionID("1"), input);
             }
         }
         else {

@@ -10,6 +10,8 @@ import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.*;
 import com.amazonaws.services.dynamodbv2.xspec.UpdateItemExpressionSpec;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.util.*;
 
 public class DataWriter {
@@ -99,7 +101,7 @@ public class DataWriter {
 
         ScanResult scanResult = dbClient.scan(scanRequest);
         if(scanResult.getItems().size() > 0){
-            return scanResult.getItems().get(0).get("electionID").getS().toString();
+            return scanResult.getItems().get(0).get("electionID").getS();
         }
 
         return null;
@@ -198,6 +200,31 @@ public class DataWriter {
             }
             System.out.println("");
         }
+    }
+
+    public void castVote(String id, String electionID, int candidate){
+        GetItemSpec getItemSpec = new GetItemSpec().withPrimaryKey("id", id);
+        Item item = dynamoDB.getTable(ACCOUNT_TABLE).getItem(getItemSpec);
+        Map<String, Boolean> electionMap = item.getMap("elections");
+        if(!electionMap.get(electionID)) {
+            electionMap.put(electionID, true);
+            UpdateItemSpec updateItemSpec = new UpdateItemSpec().withPrimaryKey("id", id)
+                    .withUpdateExpression("set elections = :elections")
+                    .withValueMap(new ValueMap().withMap(":elections", electionMap));
+            dynamoDB.getTable(ACCOUNT_TABLE).updateItem(updateItemSpec);
+
+            GetItemSpec electionTableSpec = new GetItemSpec().withPrimaryKey("electionID", electionID);
+            Item electionItem = dynamoDB.getTable(ELECTIONS_TABLE).getItem(electionTableSpec);
+            Map<String, BigDecimal> resultsMap = electionItem.getMap("results");
+            String candidateName = resultsMap.keySet().toArray(new String[electionMap.size()])[candidate-1];
+            BigDecimal voteSum = new BigDecimal(resultsMap.get(candidateName).intValue() + 1);
+            resultsMap.put(candidateName, voteSum);
+            UpdateItemSpec updateElectionSpec = new UpdateItemSpec().withPrimaryKey("electionID", electionID)
+                    .withUpdateExpression("set results = :results")
+                    .withValueMap(new ValueMap().withMap(":results", resultsMap));
+            dynamoDB.getTable(ELECTIONS_TABLE).updateItem(updateElectionSpec);
+        }
+
 
     }
 
