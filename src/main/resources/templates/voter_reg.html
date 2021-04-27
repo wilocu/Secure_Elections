@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>Online Voting</title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+    <style>
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #996633;
+            border-radius: 3px;
+            box-sizing: border-box;
+            margin-top: 6px;
+            margin-bottom: 6px;
+        }
+        .container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -moz-transform: translateX(-50%) translateY(-50%);
+            -webkit-transform: translateX(-50%) translateY(-50%);
+            transform: translateX(-50%) translateY(-50%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form action="complete_reg" method="post" th:object="${user}">
+            <input type="text" id="confirm_username" name="confirm_username" hidden th:value="${user.confirm_username}">
+            <input type="text" id="confirm_pw" name="confirm_pw" hidden th:value="${user.confirm_pw}">
+            <input type="text" id="security_quest" name="security_quest" hidden th:value="${user.security_quest}">
+            <label for="fname">First Name:</label>
+            <input type="text" id="fname" name="fname" required>
+            <label for="lname">Last Name:</label>
+            <input type="text" id="lname" name="lname" required>
+            <label for="age">Age:</label>
+            <input type="number" id="age" name="age" required>
+            <label for="email_addr">Email Address:</label>
+            <input type="email" id="email_addr" name="email_addr" required>
+            <label for="citizen">Are you a citizen of the United States?</label>
+            <input type="checkbox" name="citizen" id="citizen" checked>
+            <label for="resident">Have you lived in New York State for at least 1 month?</label>
+            <input type="checkbox" name="resident" id="resident" checked>
+            <label for="felon">Have you ever been convicted of a felony?</label>
+            <input type="checkbox" name="felon" id="felon">
+            <input type="submit" value="Submit">
+        </form>
+    </div>
+</body>
+</html>

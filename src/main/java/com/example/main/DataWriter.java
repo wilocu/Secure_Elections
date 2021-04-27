@@ -13,6 +13,7 @@ import com.amazonaws.services.dynamodbv2.model.*;
 import com.amazonaws.services.xray.model.Http;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.ModelAndView;
 
@@ -52,12 +53,26 @@ public class DataWriter {
     }
 
     @RequestMapping(value="/register", method = RequestMethod.POST)
-    public void register(@ModelAttribute RegisterRequest register){
-        System.out.println(register.getElectionId());
-        System.out.println(register.getUserId());
-//        ModelAndView model = new ModelAndView();
-//        model.setViewName("welcome");
-//        return model;
+    public ModelAndView register(@ModelAttribute NewUser newUser){
+        String username = newUser.getConfirm_username();
+        ModelAndView model = new ModelAndView();
+        if(this.readFromTable(username))
+            model.setViewName("redirect:/");
+        else {
+            model.setViewName("voter_reg");
+            model.addObject("user", newUser);
+        }
+        return model;
+    }
+
+    @RequestMapping(value="/complete_reg", method = RequestMethod.POST)
+    public ModelAndView completeRegistration(@ModelAttribute("user") NewUser user, @ModelAttribute NewVoter newVoter){
+        System.out.println(newVoter.isCitizen());
+        System.out.println(user.getConfirm_username());
+
+        ModelAndView modelView = new ModelAndView();
+        modelView.setViewName("redirect:/");
+        return modelView;
     }
 
     /**
@@ -95,8 +110,7 @@ public class DataWriter {
      * @param username
      * @return
      */
-    @GetMapping("/check_user")
-    public boolean readFromTable(@RequestParam(value = "username")String username) {
+    public boolean readFromTable(String username) {
         Map<String, String> attributeNames = new HashMap<>();
         attributeNames.put("#username", "username");
 
