@@ -3,18 +3,52 @@
 <head>
     <title>Online Voting</title>
     <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
-    <style></style>
+    <style>
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #996633;
+            border-radius: 3px;
+            box-sizing: border-box;
+            margin-top: 6px;
+            margin-bottom: 6px;
+        }
+        .container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -moz-transform: translateX(-50%) translateY(-50%);
+            -webkit-transform: translateX(-50%) translateY(-50%);
+            transform: translateX(-50%) translateY(-50%);
+        }
+    </style>
 </head>
 <body>
     <p th:text="${'Welcome ' + user.username + '!'}"></p>
-    <div>
+    <div class="container">
         <h2>Register for an election:</h2>
-        <form action="register" method=post>
+        <form action="election_reg" method=post th:object="${user}">
             <label for="electionId">2024 Presidential Election</label>
-            <input type="text" hidden id="userId" name="userId" th:value="${user.id}">
+            <input type="text" hidden id="id" name="id" th:value="${user.id}">
+            <input type="text" hidden id="username" name="username" th:value="${user.username}">
+            <input type="text" hidden id="password" name="password" th:value="${user.password}">
             <input type="checkbox" id="electionId" name="electionId" value = "7c6cf504-cbd2-4a68-8da8-e2b1f91d3b85">
-            <input type="submit" value="Register">
+            <input type="submit" value="Register" disabled id="register_btn">
+            <h6 th:style="|display: ${already_registered}; color: red|" th:text="${already_registered_txt}" ></h6>
+            <h6 th:style="|display: ${not_registered}; color: green|" th:text="${already_registered_txt}"></h6>
         </form>
     </div>
+
+<script>
+    var submitElectionReg = document.getElementById("electionId");
+    submitElectionReg.onclick = function(){
+        if(submitElectionReg.checked){
+            document.getElementById("register_btn").disabled = false;
+        }
+        else{
+            document.getElementById("register_btn").disabled = true;
+        }
+    }
+</script>
 </body>
 </html>

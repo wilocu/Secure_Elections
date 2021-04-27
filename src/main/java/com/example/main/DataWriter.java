@@ -47,8 +47,28 @@ public class DataWriter {
         if(userAccount != null){
             model.setViewName("welcome");
             model.addObject("user", user);
+            model.addObject("already_registered", "none");
+            model.addObject("not_registered", "none");
+            model.addObject("already_registered_txt", "");
         }else
             model.setViewName("redirect:/");
+        return model;
+    }
+
+    @RequestMapping(value="/election_reg", method = RequestMethod.POST)
+    public ModelAndView electionRegister(@ModelAttribute("user") User user, @ModelAttribute("electionId") String electionId) {
+        ModelAndView model = new ModelAndView();
+
+        if(this.registerForElection(electionId, user.getId()).getStatusCodeValue() == HttpStatus.BAD_REQUEST.value()){
+            model.addObject("already_registered", "block");
+            model.addObject("not_registered", "none");
+            model.addObject("already_registered_txt", "You are already registered for this election!");
+        }else{
+            model.addObject("already_registered", "none");
+            model.addObject("not_registered", "block");
+            model.addObject("already_registered_txt", "You have successfully registered for this election!");
+        }
+        model.setViewName("welcome");
         return model;
     }
 
@@ -209,13 +229,12 @@ public class DataWriter {
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
-    public ResponseEntity<HttpStatus> registerForElection(@RequestParam(value = "eid")String electionID, @RequestParam(value = "uid")String userID){
+    public ResponseEntity<HttpStatus> registerForElection(String electionID, String userID){
         Map<String, Boolean> electionsList = dynamoDB.getTable(ACCOUNT_TABLE).getItem("id", userID).getMap("elections");
         if(electionsList == null)
             electionsList = new HashMap<>();
 
         if(electionsList.containsKey(electionID)) {
-            System.out.println("You have already registered for this election.");
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
         }
         else{
