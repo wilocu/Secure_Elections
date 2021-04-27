@@ -10,7 +10,10 @@
     <div>
         <h2>Register for an election:</h2>
         <form action="register" method=post>
-            <input type="checkbox" id="reg" name="reg" value = "2024">
+            <label for="electionId">2024 Presidential Election</label>
+            <input type="text" hidden id="userId" name="userId" th:value="${user.id}">
+            <input type="checkbox" id="electionId" name="electionId" value = "7c6cf504-cbd2-4a68-8da8-e2b1f91d3b85">
+            <input type="submit" value="Register">
         </form>
     </div>
 </body>

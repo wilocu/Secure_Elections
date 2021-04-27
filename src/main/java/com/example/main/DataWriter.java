@@ -41,14 +41,23 @@ public class DataWriter {
         String username = user.getUsername();
         String password = user.getPassword();
         Map<String, AttributeValue> userAccount = this.readFromTable(username, password);
+        user.setId(userAccount.get("id").getS());
         ModelAndView model = new ModelAndView();
         if(userAccount != null){
             model.setViewName("welcome");
             model.addObject("user", user);
-            model.addObject("id", userAccount.get("id").getS());
         }else
             model.setViewName("redirect:/");
         return model;
+    }
+
+    @RequestMapping(value="/register", method = RequestMethod.POST)
+    public void register(@ModelAttribute RegisterRequest register){
+        System.out.println(register.getElectionId());
+        System.out.println(register.getUserId());
+//        ModelAndView model = new ModelAndView();
+//        model.setViewName("welcome");
+//        return model;
     }
 
     /**
@@ -167,7 +176,6 @@ public class DataWriter {
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
-    @PostMapping("/register")
     public ResponseEntity<HttpStatus> registerForElection(@RequestParam(value = "eid")String electionID, @RequestParam(value = "uid")String userID){
         Map<String, Boolean> electionsList = dynamoDB.getTable(ACCOUNT_TABLE).getItem("id", userID).getMap("elections");
         if(electionsList == null)
