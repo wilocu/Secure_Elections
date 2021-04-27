@@ -70,9 +70,29 @@ public class DataWriter {
         System.out.println(newVoter.isCitizen());
         System.out.println(user.getConfirm_username());
 
-        ModelAndView modelView = new ModelAndView();
-        modelView.setViewName("redirect:/");
-        return modelView;
+        Registration newReg = new Registration(newVoter.getFname(), newVoter.getLname(), newVoter.getAge(),
+                                               newVoter.getEmail_addr(), newVoter.isCitizen(), newVoter.isResident(),
+                                               newVoter.isFelon());
+        if (newVoter.getAge() >= 18 && newVoter.isCitizen() && newVoter.isResident() && !newVoter.isFelon())
+            newReg.registrationSuccess = true;
+        else
+            newReg.registrationSuccess = false;
+        Date date = new Date();
+        Account newUser = new Account(new RegistrationNumber("000000001"), user.getConfirm_username(), user.getConfirm_pw(),
+                                      new SecurityQuestion("What is the name of your hometown?", user.getSecurity_quest()),
+                                      date, newReg.registrationSuccess);
+        String newAccountID = this.writeToTable(newUser);
+        newReg.registrationID = newAccountID;
+        this.writeToTable(newReg);
+        User user1 = new User();
+        user1.setId(newAccountID);
+        user1.setUsername(user.getConfirm_username());
+        user1.setPassword(user.getConfirm_pw());
+
+        ModelAndView model = new ModelAndView();
+        model.setViewName("welcome");
+        model.addObject("user", user1);
+        return model;
     }
 
     /**
@@ -174,8 +194,7 @@ public class DataWriter {
         return accountID;
     }
 
-    @PutMapping("/new_reg")
-    public ResponseEntity<HttpStatus> writeToTable(@RequestBody Registration registration){
+    public ResponseEntity<HttpStatus> writeToTable(Registration registration){
         Item registrationItem = new Item()
                 .withString("id", registration.registrationID)
                 .withString("fname", registration.fName)
