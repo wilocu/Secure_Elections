@@ -1,3 +1,5 @@
+package com.example.main;
+
 public class ElectionId {
 
     public String id;

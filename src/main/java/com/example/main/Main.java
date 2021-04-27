@@ -1,9 +1,20 @@
+package com.example.main;
+
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Map;
 import java.util.Scanner;
+
+import com.amazonaws.services.dynamodbv2.model.AttributeValue;
+import org.springframework.boot.SpringApplication;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 
 import static java.lang.Integer.parseInt;
 
+@SpringBootApplication
 public class Main {
 
     //list of all the accounts
@@ -19,6 +30,7 @@ public class Main {
     public static DataWriter dataWriter = new DataWriter();
 
     public static void main(String[] args) {
+        SpringApplication.run(Main.class, args);
         start();
     }
 
@@ -28,36 +40,36 @@ public class Main {
 
             /*
             //Practice accounts & voters & nonvoters for testing
-            RegistrationNumber numA = new RegistrationNumber("005721006");
-            SecurityQuestion sqA = new SecurityQuestion("What is your hometown?", "Rochester");
+            com.example.main.RegistrationNumber numA = new com.example.main.RegistrationNumber("005721006");
+            com.example.main.SecurityQuestion sqA = new com.example.main.SecurityQuestion("What is your hometown?", "Rochester");
             Date dateA = new Date();
-            Account accA = new Account(numA, "account1", "password1", sqA, dateA);
+            com.example.main.Account accA = new com.example.main.Account(numA, "account1", "password1", sqA, dateA);
             program.accounts.add(accA);
 
-            RegistrationNumber numB = new RegistrationNumber("000000050");
-            SecurityQuestion sqB = new SecurityQuestion("What is your hometown?", "Buffalo");
+            com.example.main.RegistrationNumber numB = new com.example.main.RegistrationNumber("000000050");
+            com.example.main.SecurityQuestion sqB = new com.example.main.SecurityQuestion("What is your hometown?", "Buffalo");
             Date dateB = new Date();
-            Account accB = new Account(numB, "account2", "password2", sqB, dateB);
+            com.example.main.Account accB = new com.example.main.Account(numB, "account2", "password2", sqB, dateB);
             program.accounts.add(accB);
 
             //can vote
-            Person personA = new Person("John", "Doe", "john123@gmail.com", true, 25, true, false);
-            Voter voterA = new Voter(personA);
+            com.example.main.Person personA = new com.example.main.Person("John", "Doe", "john123@gmail.com", true, 25, true, false);
+            com.example.main.Voter voterA = new com.example.main.Voter(personA);
             program.voters.add(voterA);
 
             //cannot vote
-            Person personB = new Person("Mary", "Sue", "mjs543@gmail.com", false, 18, true, false);
-            NonVoter voterB = new NonVoter(personB);
+            com.example.main.Person personB = new com.example.main.Person("Mary", "Sue", "mjs543@gmail.com", false, 18, true, false);
+            com.example.main.NonVoter voterB = new com.example.main.NonVoter(personB);
             program.nonVoters.add(voterB);
 
             //can vote
-            Person personC = new Person("Dude", "3", "rando987@gmail.com", true, 70, true, false);
-            Voter voterC = new Voter(personC);
+            com.example.main.Person personC = new com.example.main.Person("Dude", "3", "rando987@gmail.com", true, 70, true, false);
+            com.example.main.Voter voterC = new com.example.main.Voter(personC);
             program.voters.add(voterC);
             */
 
             Scanner scan = new Scanner(System.in);
-            System.out.println("Election Portal!");
+            System.out.println("com.example.main.Election Portal!");
             System.out.println("Enter (0) to exit.\n" +
                     "Enter (1) to log in. \n" +
                     "Enter (2) to create an account.");
@@ -138,9 +150,9 @@ public class Main {
             System.out.println("Enter your password: ");
             String password = scan.nextLine();
 
-            String accountID = dataWriter.readFromTable(username, password);
-            if (accountID != null) {
-                this.currentID = accountID;
+            Map<String, AttributeValue> account = dataWriter.readFromTable(username, password);
+            if (account != null) {
+                this.currentID = account.get("id").getS();
                 System.out.println("Logged in successfully.");
                 System.out.println("Welcome " + username);
                 login = true;
@@ -156,7 +168,7 @@ public class Main {
     }
 
     /*
-     * An account is created with Registration Number, username, password,
+     * An account is created with com.example.main.Registration Number, username, password,
      * a Security Question, and date.
      */
     public void createAccount() {
@@ -220,7 +232,7 @@ public class Main {
     public Registration voterRegistration() {
         while (true) {
             System.out.println("-------------VOTER REGISTRATION INFO-------------------");
-            //Person person1 = new Person();
+            //com.example.main.Person person1 = new com.example.main.Person();
             Scanner scan = new Scanner(System.in);
 
             System.out.println("Enter your first name: ");
@@ -369,7 +381,7 @@ public class Main {
         ;
         Scanner scan = new Scanner(System.in);
         System.out.println("Enter the number of the election you want to register for:");
-        System.out.println("Enter (1) to register for the Presidential 2024 Election\n" +
+        System.out.println("Enter (1) to register for the Presidential 2024 com.example.main.Election\n" +
                 "Enter (2) to go back\n");
         int input = parseInt(scan.nextLine());
         if (input == 1) {

@@ -1,3 +1,5 @@
+package com.example.main;
+
 public class Registration {
     public String registrationID;
     public String fName;

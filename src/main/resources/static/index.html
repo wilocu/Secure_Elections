@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>Online Voting</title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+    <style>
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #996633;
+            border-radius: 3px;
+            box-sizing: border-box;
+            margin-top: 6px;
+            margin-bottom: 6px;
+        }
+        .container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -moz-transform: translateX(-50%) translateY(-50%);
+            -webkit-transform: translateX(-50%) translateY(-50%);
+            transform: translateX(-50%) translateY(-50%);
+        }
+        .paragraph {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            -moz-transform: translateX(-50%) translateY(-10%);
+            -webkit-transform: translateX(-50%) translateY(-10%);
+            transform: translateX(-50%) translateY(-15%);
+        }
+        #password_reqs{
+            position: relative;
+            display:none;
+            background: #f1f1f1;
+            color: #000;
+            position: relative;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        #password_reqs p{
+            padding: 10px 20px;
+            font-size: 16;
+        }
+    </style>
+</head>
+<body>
+<p class="paragraph">Welcome to Online Voting!</p>
+<div class="container">
+    <form action="login" method="post">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username"><br><br>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" minlength="8"
+        maxlength="16" title="Must be between 8 & 16 characters, and contain at least one number and one uppercase and lowercase letter" required>
+        <div id="password_reqs">
+            <h3>Password must contain the following:</h3>
+            <p>A lowercase letter</p>
+            <p>A capital (uppercase) letter</p>
+            <p>A number</p>
+            <p>8-16 characters</p>
+        </div>
+        <input type="submit" value="Log In">
+    </form>
+</div>
+<script>
+        var pw = document.getElementById("password");
+        pw.onfocus = function(){
+            document.getElementById("password_reqs").style.display = "block";
+        }
+        pw.onblur = function(){
+            document.getElementById("password_reqs").style.display = "none";
+        }
+    </script>
+</body>
+</html>

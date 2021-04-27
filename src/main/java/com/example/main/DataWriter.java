@@ -1,3 +1,5 @@
+package com.example.main;
+
 import com.amazonaws.auth.AWSStaticCredentialsProvider;
 import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.regions.Regions;
@@ -8,12 +10,16 @@ import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.*;
-import com.amazonaws.services.dynamodbv2.xspec.UpdateItemExpressionSpec;
+import com.amazonaws.services.xray.model.Http;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.ModelAndView;
 
 import java.math.BigDecimal;
-import java.math.BigInteger;
 import java.util.*;
 
+@RestController
 public class DataWriter {
     private AmazonDynamoDB dbClient;
     private DynamoDB dynamoDB;
@@ -30,6 +36,21 @@ public class DataWriter {
         this.dynamoDB = new DynamoDB(dbClient);
     }
 
+    @RequestMapping(value="/login", method = RequestMethod.POST)
+    public ModelAndView login(@ModelAttribute User user){
+        String username = user.getUsername();
+        String password = user.getPassword();
+        Map<String, AttributeValue> userAccount = this.readFromTable(username, password);
+        ModelAndView model = new ModelAndView();
+        if(userAccount != null){
+            model.setViewName("welcome");
+            model.addObject("user", user);
+            model.addObject("id", userAccount.get("id").getS());
+        }else
+            model.setViewName("redirect:/");
+        return model;
+    }
+
     /**
      * Helper function to check if a given username and password match an entry in the table.
      * Called from Main when logging in as a user.
@@ -37,7 +58,7 @@ public class DataWriter {
      * @param password
      * @return
      */
-    public String readFromTable(String username, String password){
+    public Map<String, AttributeValue> readFromTable(String username, String password){
         Map<String, String> attributeNames = new HashMap<>();
         attributeNames.put("#username", "username");
         attributeNames.put("#password", "password");
@@ -54,7 +75,7 @@ public class DataWriter {
 
         ScanResult scanResult = dbClient.scan(scanRequest);
         if(scanResult.getItems().size() > 0)
-            return scanResult.getItems().get(0).get("id").getS();
+            return scanResult.getItems().get(0);
 
         return null;
     }
@@ -65,7 +86,8 @@ public class DataWriter {
      * @param username
      * @return
      */
-    public boolean readFromTable(String username) {
+    @GetMapping("/check_user")
+    public boolean readFromTable(@RequestParam(value = "username")String username) {
         Map<String, String> attributeNames = new HashMap<>();
         attributeNames.put("#username", "username");
 
@@ -86,7 +108,8 @@ public class DataWriter {
         return false;
     }
 
-    public String getElectionID(String id){
+    @GetMapping("/election_id")
+    public String getElectionID(@RequestParam(value = "id")String id){
         Map<String, String> attributeNames = new HashMap<>();
         attributeNames.put("#id", "id");
 
@@ -111,7 +134,8 @@ public class DataWriter {
      * Given an account, write it to the database.
      * @param account
      */
-    public String writeToTable(Account account){
+    @PutMapping("/new_user")
+    public String writeToTable(@RequestBody Account account){
         String accountID = UUID.randomUUID().toString();
         Item accountItem = new Item()
                 .withString("id", accountID)
@@ -127,7 +151,8 @@ public class DataWriter {
         return accountID;
     }
 
-    public void writeToTable(Registration registration){
+    @PutMapping("/new_reg")
+    public ResponseEntity<HttpStatus> writeToTable(@RequestBody Registration registration){
         Item registrationItem = new Item()
                 .withString("id", registration.registrationID)
                 .withString("fname", registration.fName)
@@ -138,52 +163,164 @@ public class DataWriter {
                 .withBoolean("resident", registration.residency)
                 .withBoolean("felon", registration.felony);
         dynamoDB.getTable(REGISTRATION_TABLE).putItem(registrationItem);
+
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
-    public void registerForElection(String electionID, String userID){
+    @PostMapping("/register")
+    public ResponseEntity<HttpStatus> registerForElection(@RequestParam(value = "eid")String electionID, @RequestParam(value = "uid")String userID){
         Map<String, Boolean> electionsList = dynamoDB.getTable(ACCOUNT_TABLE).getItem("id", userID).getMap("elections");
         if(electionsList == null)
             electionsList = new HashMap<>();
 
-        if(electionsList.containsKey(electionID))
+        if(electionsList.containsKey(electionID)) {
             System.out.println("You have already registered for this election.");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+        }
         else{
             electionsList.put(electionID, false);
             UpdateItemSpec updateItemSpec = new UpdateItemSpec().withPrimaryKey("id", userID)
                     .withUpdateExpression("set elections = :elections")
                     .withValueMap(new ValueMap().withMap(":elections", electionsList));
             dynamoDB.getTable(ACCOUNT_TABLE).updateItem(updateItemSpec);
+            return ResponseEntity.ok(HttpStatus.OK);
         }
-
     }
 
-    public void updateUsername(String newName, String id){
+    @PostMapping("/update_username")
+    public ResponseEntity<HttpStatus> updateUsername(@RequestParam(value = "name")String newName, @RequestParam(value = "id")String id){
         UpdateItemSpec updateItemSpec= new UpdateItemSpec().withPrimaryKey("id", id)
                 .withUpdateExpression("set username = :newname")
                 .withValueMap(new ValueMap().withString(":newname", newName));
         dynamoDB.getTable(ACCOUNT_TABLE).updateItem(updateItemSpec);
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
-    public void updatePassword(String newPassword, String id){
+    @PostMapping("/update_password")
+    public ResponseEntity<HttpStatus> updatePassword(@RequestParam(value = "password")String newPassword, @RequestParam(value = "id")String id){
         UpdateItemSpec updateItemSpec = new UpdateItemSpec().withPrimaryKey("id", id)
                 .withUpdateExpression("set password = :password")
                 .withValueMap(new ValueMap().withString(":password", newPassword));
         dynamoDB.getTable(ACCOUNT_TABLE).updateItem(updateItemSpec);
+        return ResponseEntity.ok(HttpStatus.OK);
     }
 
-    public void viewVoterRegistration(String id){
+    public class VoterRegistration{
+        private String fname;
+        private String lname;
+        private String age;
+        private String email;
+        private String citizen;
+        private String resident;
+        private String felon;
+
+        public VoterRegistration(String fname, String lname, String age, String email, String citizen, String resident, String felon) {
+            this.fname = fname;
+            this.lname = lname;
+            this.age = age;
+            this.email = email;
+            this.citizen = citizen;
+            this.resident = resident;
+            this.felon = felon;
+        }
+
+        public String getFname() {
+            return fname;
+        }
+
+        public void setFname(String fname) {
+            this.fname = fname;
+        }
+
+        public String getLname() {
+            return lname;
+        }
+
+        public void setLname(String lname) {
+            this.lname = lname;
+        }
+
+        public String getAge() {
+            return age;
+        }
+
+        public void setAge(String age) {
+            this.age = age;
+        }
+
+        public String getEmail() {
+            return email;
+        }
+
+        public void setEmail(String email) {
+            this.email = email;
+        }
+
+        public String getCitizen() {
+            return citizen;
+        }
+
+        public void setCitizen(String citizen) {
+            this.citizen = citizen;
+        }
+
+        public String getResident() {
+            return resident;
+        }
+
+        public void setResident(String resident) {
+            this.resident = resident;
+        }
+
+        public String getFelon() {
+            return felon;
+        }
+
+        public void setFelon(String felon) {
+            this.felon = felon;
+        }
+    }
+
+    @GetMapping("/view_reg")
+    public ResponseEntity<VoterRegistration> viewVoterRegistration(@RequestParam(value = "id")String id){
         GetItemSpec getItemSpec = new GetItemSpec().withPrimaryKey("id", id);
         Item item = dynamoDB.getTable(REGISTRATION_TABLE).getItem(getItemSpec);
-        System.out.printf("- First Name: %s\n", item.get("fname").toString());
-        System.out.printf("- Last Name: %s\n", item.get("lname").toString());
-        System.out.printf("- Age: %s\n", item.get("age").toString());
-        System.out.printf("- Email: %s\n", item.get("email").toString());
-        System.out.printf("- United States Citizen: %s\n", item.get("citizen").toString());
-        System.out.printf("- Resident of NY State: %s\n", item.get("resident").toString());
-        System.out.printf("- Convicted of felony: %s\n\n", item.get("felon").toString());
+        VoterRegistration voterReg = new VoterRegistration(item.get("fname").toString(), item.get("lname").toString(),
+                                                           item.get("age").toString(), item.get("email").toString(),
+                                                           item.get("citizen").toString(), item.get("resident").toString(),
+                                                           item.get("felon").toString());
+        return ResponseEntity.status(HttpStatus.OK).body(voterReg);
     }
 
-    public void viewElectionResults(String id){
+    public class ElectionResult{
+        private String id;
+        private Map<String, Integer> results;
+
+        public ElectionResult(String id, Map<String, Integer> results) {
+            this.id = id;
+            this.results = results;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public void setId(String id) {
+            this.id = id;
+        }
+
+        public Map<String, Integer> getResults() {
+            return results;
+        }
+
+        public void setResults(Map<String, Integer> results) {
+            this.results = results;
+        }
+    }
+
+    @GetMapping("/view_results")
+    public ResponseEntity<List<ElectionResult>> viewElectionResults(@RequestParam(value = "id")String id){
+        List<ElectionResult> electionResults = new ArrayList<>();
         GetItemSpec getItemSpec = new GetItemSpec().withPrimaryKey("id", id);
         Item item = dynamoDB.getTable(ACCOUNT_TABLE).getItem(getItemSpec);
         Map<String, Boolean> electionMap = item.getMap("elections");
@@ -191,18 +328,14 @@ public class DataWriter {
         for(int i = 0; i < electionIDs.length; i++){
             GetItemSpec getElectionSpec = new GetItemSpec().withPrimaryKey("electionID", electionIDs[i]);
             Item electionItem = dynamoDB.getTable(ELECTIONS_TABLE).getItem(getElectionSpec);
-            System.out.printf("Election #%s\n", electionItem.get("id").toString());
             Map<String, Integer> resultsMap = electionItem.getMap("results");
-            Iterator mapIterator = resultsMap.entrySet().iterator();
-            while (mapIterator.hasNext()){
-                Map.Entry element = (Map.Entry)mapIterator.next();
-                System.out.println("- Candidate: " + element.getKey().toString() + "\n-\tNumber of votes: " + element.getValue().toString());
-            }
-            System.out.println("");
+            electionResults.add(new ElectionResult(id, resultsMap));
         }
+        return ResponseEntity.status(HttpStatus.OK).body(electionResults);
     }
 
-    public void castVote(String id, String electionID, int candidate){
+    @PostMapping("/cast_vote")
+    public void castVote(@RequestParam(value = "id")String id, @RequestParam(value = "eid")String electionID, @RequestParam(value = "candidate")int candidate){
         GetItemSpec getItemSpec = new GetItemSpec().withPrimaryKey("id", id);
         Item item = dynamoDB.getTable(ACCOUNT_TABLE).getItem(getItemSpec);
         Map<String, Boolean> electionMap = item.getMap("elections");
@@ -224,11 +357,10 @@ public class DataWriter {
                     .withValueMap(new ValueMap().withMap(":results", resultsMap));
             dynamoDB.getTable(ELECTIONS_TABLE).updateItem(updateElectionSpec);
         }
-
-
     }
 
-    public void printCandidates(String id){
+    @GetMapping("/get_candidates")
+    public void printCandidates(@RequestParam(value = "id")String id){
         GetItemSpec getItemSpec = new GetItemSpec().withPrimaryKey("id", id);
         Item item = dynamoDB.getTable(ACCOUNT_TABLE).getItem(getItemSpec);
         Map<String, Boolean> electionMap = item.getMap("elections");
@@ -236,7 +368,7 @@ public class DataWriter {
         for(int i = 0; i < electionIDs.length; i++){
             GetItemSpec getElectionSpec = new GetItemSpec().withPrimaryKey("electionID", electionIDs[i]);
             Item electionItem = dynamoDB.getTable(ELECTIONS_TABLE).getItem(getElectionSpec);
-            System.out.printf("Election #%s\n", electionItem.get("id").toString());
+            System.out.printf("com.example.main.Election #%s\n", electionItem.get("id").toString());
             Map<String, Integer> resultsMap = electionItem.getMap("results");
             Iterator mapIterator = resultsMap.entrySet().iterator();
             int count = 1;

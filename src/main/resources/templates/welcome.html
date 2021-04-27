@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>Online Voting</title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+    <style></style>
+</head>
+<body>
+    <p th:text="${'Welcome ' + user.username + '!'}"></p>
+    <div>
+        <h2>Register for an election:</h2>
+        <form action="register" method=post>
+            <input type="checkbox" id="reg" name="reg" value = "2024">
+        </form>
+    </div>
+</body>
+</html>
