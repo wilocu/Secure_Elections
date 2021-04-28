@@ -1,5 +1,7 @@
 /***
  * This class is used to encrypt a password using a 128-bit key.
+ * Sergey Kargopolov's example was used as a template for this class.
+ * Find his blog post at: https://www.appsdeveloperblog.com/encrypt-user-password-example-java/
  */
 
 
