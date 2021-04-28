@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>Online Voting</title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+    <style>
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #996633;
+            border-radius: 3px;
+            box-sizing: border-box;
+            margin-top: 6px;
+            margin-bottom: 6px;
+        }
+        .container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -moz-transform: translateX(-50%) translateY(-50%);
+            -webkit-transform: translateX(-50%) translateY(-50%);
+            transform: translateX(-50%) translateY(-50%);
+        }
+        .paragraph {
+            position: absolute;
+            top: 10%;
+            left: 50%;
+            -moz-transform: translateX(-50%) translateY(-10%);
+            -webkit-transform: translateX(-50%) translateY(-10%);
+            transform: translateX(-50%) translateY(-15%);
+        }
+        #password_reqs{
+            position: relative;
+            display:none;
+            background: #f1f1f1;
+            color: #000;
+            position: relative;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        #password_reqs p{
+            padding: 10px 20px;
+            font-size: 16;
+        }
+        #reg_password_reqs{
+            position: relative;
+            display:none;
+            background: #f1f1f1;
+            color: #000;
+            position: relative;
+            padding: 10px;
+            margin-top: 10px;
+        }
+        #reg_password_reqs p{
+            padding: 10px 20px;
+            font-size: 16;
+        }
+    </style>
+</head>
+<body>
+<p class="paragraph" id="online_voting">Welcome to Online Voting!</p>
+<div class="container" id="login_container">
+    <form action="login" method="post">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" minlength="8"
+        maxlength="16" title="Must be between 8 & 16 characters, and contain at least one number and one uppercase and lowercase letter" required>
+        <div id="password_reqs">
+            <h3>Password must contain the following:</h3>
+            <p>A lowercase letter</p>
+            <p>A capital (uppercase) letter</p>
+            <p>A number</p>
+            <p>8-16 characters</p>
+        </div>
+        <input type="submit" value="Log In">
+        <input type="button" id="register" value="Need to Register?">
+    </form>
+</div>
+<div class="container" id="register_container" style="display: none;">
+    <form action="register" method="post">
+        <label for="reg_username">Username:</label>
+        <input type="text" id="reg_username" name="reg_username" required><br><br>
+        <label for="confirm_username" id="confirm_name_lbl">Confirm Username:</label>
+        <input type="text" id="confirm_username" name="confirm_username" required>
+        <h5 id="usernames_no_match" style="display: none; color: red;">Usernames do not match!</h5>
+        <h5 id="usernames_match" style="display: none; color: green;">Usernames match!</h5>
+        <label for="reg_password">Password:</label>
+        <input type="password" id="reg_password" name="reg_password" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" minlength="8"
+            maxlength="16"
+            title="Must be between 8 & 16 characters, and contain at least one number and one uppercase and lowercase letter"
+            required>
+        <label for="confirm_pw">Confirm Password:</label>
+        <input type="password" id="confirm_pw" name="confirm_pw" pattern="(?=.*\d)(?=.*[a-z])(?=.*[A-Z]).{8,}" minlength="8"
+            maxlength="16"
+            title="Must be between 8 & 16 characters, and contain at least one number and one uppercase and lowercase letter"
+            required>
+        <h5 id="passwords_no_match" style="display: none; color: red;">Passwords do not match!</h5>
+        <h5 id="passwords_match" style="display: none; color: green;">Passwords match!</h5>
+        <label for="security_quest">Enter the name of your hometown:</label>
+        <input type="text" id="security_quest" name="security_quest" required>  
+        <div id="reg_password_reqs">
+            <h3>Password must contain the following:</h3>
+            <p>A lowercase letter</p>
+            <p>A capital (uppercase) letter</p>
+            <p>A number</p>
+            <p>8-16 characters</p>
+        </div>
+
+        <input type="submit" id="submit_reg" style="display: none;">
+        <input type="button" value="Register" id="reg_button">
+        <input type="button" value="Back to Login" id="back_login_btn">
+    </form>
+</div>
+<script>
+        var pw = document.getElementById("password");
+        pw.onfocus = function(){
+            document.getElementById("password_reqs").style.display = "block";
+        }
+        pw.onblur = function(){
+            document.getElementById("password_reqs").style.display = "none";
+        }
+        var regButton = document.getElementById("register");
+        regButton.onclick = function(){
+            document.getElementById("register_container").style.display = "block";
+            document.getElementById("login_container").style.display = "none";
+            document.getElementById("online_voting").style.display = "none";
+        }
+        var backLoginBtn = document.getElementById("back_login_btn");
+        backLoginBtn.onclick = function(){
+            document.getElementById("register_container").style.display = "none";
+            document.getElementById("login_container").style.display = "block";
+            document.getElementById("online_voting").style.display = "block";
+        }
+        var confirmUsername = document.getElementById("confirm_username");
+        confirmUsername.oninput = function () {
+            var inputPw = document.getElementById("reg_username").value;
+            var confirmPw = document.getElementById("confirm_username").value;
+            if (confirmPw === inputPw) {
+                document.getElementById("usernames_no_match").style.display = "none";
+                document.getElementById("usernames_match").style.display = "block";
+            } else {
+                document.getElementById("usernames_no_match").style.display = "block";
+                document.getElementById("usernames_match").style.display = "none";
+            }
+        }
+
+        var regPw = document.getElementById("reg_password");
+        var confirmRegPw = document.getElementById("confirm_pw");
+        regPw.onfocus = function () {
+            document.getElementById("reg_password_reqs").style.display = "block";
+        }
+        regPw.onblur = function () {
+            document.getElementById("reg_password_reqs").style.display = "none";
+        }
+        confirmRegPw.onfocus = function () {
+            document.getElementById("reg_password_reqs").style.display = "block";
+        }
+        confirmRegPw.onblur = function () {
+            document.getElementById("reg_password_reqs").style.display = "none";
+        }
+        confirmRegPw.oninput = function(){
+            var inputPw = document.getElementById("reg_password").value;
+            var confirmPw = document.getElementById("confirm_pw").value;
+            if(confirmPw === inputPw){
+                document.getElementById("passwords_no_match").style.display = "none";
+                document.getElementById("passwords_match").style.display = "block";
+            }else{
+                document.getElementById("passwords_no_match").style.display = "block";
+                document.getElementById("passwords_match").style.display = "none";
+            }
+        }
+
+        var regBtn = document.getElementById("reg_button");
+        regBtn.onclick = function(){
+            if(document.getElementById("reg_password").value === document.getElementById("confirm_pw").value &&
+               document.getElementById("reg_username").value === document.getElementById("confirm_username").value){
+                   document.getElementById("submit_reg").click();
+               }
+        }
+    </script>
+</body>
+</html>

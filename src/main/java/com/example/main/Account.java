@@ -10,14 +10,16 @@ public class Account {
     public SecurityQuestion question;
     public Date dateOfCreation;
     public boolean voter;
+    private String salt;
 
-    public Account(RegistrationNumber number, String username, String password, SecurityQuestion question, Date dateOfCreation, boolean voter) {
+    public Account(RegistrationNumber number, String username, String password, SecurityQuestion question, Date dateOfCreation, boolean voter, String salt) {
         this.number = number;
         this.username = username;
         this.password = password;
         this.question = question;
         this.dateOfCreation = dateOfCreation;
         this.voter = voter;
+        this.salt = salt;
     }
 
     public void setNumber(RegistrationNumber number) {
@@ -63,4 +65,12 @@ public class Account {
     public boolean isVoter() { return voter; }
 
     public void setVoter(boolean voter) { this.voter = voter; }
+
+    public String getSalt() {
+        return salt;
+    }
+
+    public void setSalt(String salt) {
+        this.salt = salt;
+    }
 }

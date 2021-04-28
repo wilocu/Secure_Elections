@@ -10,6 +10,7 @@ import com.amazonaws.services.dynamodbv2.document.spec.GetItemSpec;
 import com.amazonaws.services.dynamodbv2.document.spec.UpdateItemSpec;
 import com.amazonaws.services.dynamodbv2.document.utils.ValueMap;
 import com.amazonaws.services.dynamodbv2.model.*;
+import com.amazonaws.services.dynamodbv2.xspec.M;
 import com.amazonaws.services.xray.model.Http;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -41,9 +42,20 @@ public class DataWriter {
     public ModelAndView login(@ModelAttribute User user){
         String username = user.getUsername();
         String password = user.getPassword();
-        Map<String, AttributeValue> userAccount = this.readFromTable(username, password);
-        user.setId(userAccount.get("id").getS());
+        String userSalt = this.getSalt(username);
+        String encryptedPassword = this.getEncryptedPassword(username);
         ModelAndView model = new ModelAndView();
+        if(!EncryptPassword.checkPassword(password, encryptedPassword, userSalt)){
+            model.setViewName("redirect:/");
+            return model;
+        }
+        user.setPassword(encryptedPassword);
+        Map<String, AttributeValue> userAccount = this.readFromTable(username, encryptedPassword);
+        if(userAccount == null){
+            model.setViewName("redirect:/");
+            return model;
+        }
+        user.setId(userAccount.get("id").getS());
         if(userAccount != null){
             model.setViewName("welcome");
             model.addObject("user", user);
@@ -52,6 +64,13 @@ public class DataWriter {
             model.addObject("already_registered_txt", "");
         }else
             model.setViewName("redirect:/");
+        return model;
+    }
+
+    @RequestMapping(value="/logout", method = RequestMethod.POST)
+    public ModelAndView logout(){
+        ModelAndView model = new ModelAndView();
+        model.setViewName("redirect:/");
         return model;
     }
 
@@ -72,9 +91,75 @@ public class DataWriter {
         return model;
     }
 
+    @RequestMapping(value="/go_vote", method = RequestMethod.POST)
+    public ModelAndView goVote(@ModelAttribute("user") User user){
+        ModelAndView model = new ModelAndView();
+        Map<String, AttributeValue> userInfo = this.readFromTable(user.getUsername(), user.getPassword());
+        if(userInfo.get("elections") == null){
+            model.addObject("user", user);
+            model.addObject("can_vote", "none");
+            model.addObject("cannot_vote", "block");
+            model.addObject("voting_txt", "You are either not registered for an election, or are not eligible to vote.");
+            model.setViewName("voting");
+            return model;
+        }
+        else if(userInfo.get("voter").getS().equals("true") && !userInfo.get("elections").getM().isEmpty()){
+            model.addObject("user", user);
+            model.addObject("can_vote", "block");
+            model.addObject("cannot_vote", "none");
+            model.addObject("voting_txt", "");
+        }else{
+            model.addObject("user", user);
+            model.addObject("can_vote", "none");
+            model.addObject("cannot_vote", "block");
+            model.addObject("voting_txt", "You are either not registered for an election, or are not eligible to vote.");
+        }
+
+        model.setViewName("voting");
+        return model;
+    }
+
+    @RequestMapping(value="/cast_vote", method = RequestMethod.POST)
+    public ModelAndView castVote(@ModelAttribute("user") User user, @ModelAttribute("candidate_vote") String candidate){
+        ModelAndView model = new ModelAndView();
+
+        int candidateNum = Integer.parseInt(candidate);
+        String userId = user.getId();
+        String electionId = this.getElectionID("1");
+        model.addObject("can_vote", "none");
+        model.addObject("cannot_vote", "block");
+
+        if(!this.castVote(userId, electionId, candidateNum)){
+            model.addObject("voting_txt", "You have already voted in this election!");
+        }else{
+            model.addObject("voting_txt", "Your vote was successfully cast!");
+        }
+
+        model.setViewName("voting");
+        return model;
+    }
+
+    @RequestMapping(value="/go_home", method = RequestMethod.POST)
+    public ModelAndView goHome(@ModelAttribute("user") User user){
+        ModelAndView model = new ModelAndView();
+        model.setViewName("welcome");
+        return model;
+    }
+
+    @RequestMapping(value="/view_profile", method = RequestMethod.POST)
+    public ModelAndView viewProfile(@ModelAttribute("user") User user){
+        ModelAndView model = new ModelAndView();
+        VoterRegistration userProfile = this.viewVoterRegistration(user.getId());
+        model.addObject("user", user);
+        model.addObject("userProfile", userProfile);
+        model.setViewName("profile");
+        return model;
+    }
+
     @RequestMapping(value="/register", method = RequestMethod.POST)
     public ModelAndView register(@ModelAttribute NewUser newUser){
         String username = newUser.getConfirm_username();
+
         ModelAndView model = new ModelAndView();
         if(this.readFromTable(username))
             model.setViewName("redirect:/");
@@ -87,8 +172,6 @@ public class DataWriter {
 
     @RequestMapping(value="/complete_reg", method = RequestMethod.POST)
     public ModelAndView completeRegistration(@ModelAttribute("user") NewUser user, @ModelAttribute NewVoter newVoter){
-        System.out.println(newVoter.isCitizen());
-        System.out.println(user.getConfirm_username());
 
         Registration newReg = new Registration(newVoter.getFname(), newVoter.getLname(), newVoter.getAge(),
                                                newVoter.getEmail_addr(), newVoter.isCitizen(), newVoter.isResident(),
@@ -98,16 +181,20 @@ public class DataWriter {
         else
             newReg.registrationSuccess = false;
         Date date = new Date();
-        Account newUser = new Account(new RegistrationNumber("000000001"), user.getConfirm_username(), user.getConfirm_pw(),
+        String salt = EncryptPassword.salt(20);
+        String encryptedPassword = EncryptPassword.generatePassword(user.getConfirm_pw(), salt);
+
+        Account newUser = new Account(new RegistrationNumber("000000001"), user.getConfirm_username(), encryptedPassword,
                                       new SecurityQuestion("What is the name of your hometown?", user.getSecurity_quest()),
-                                      date, newReg.registrationSuccess);
+                                      date, newReg.registrationSuccess, salt);
         String newAccountID = this.writeToTable(newUser);
         newReg.registrationID = newAccountID;
         this.writeToTable(newReg);
         User user1 = new User();
         user1.setId(newAccountID);
         user1.setUsername(user.getConfirm_username());
-        user1.setPassword(user.getConfirm_pw());
+
+        user1.setPassword(encryptedPassword);
 
         ModelAndView model = new ModelAndView();
         model.setViewName("welcome");
@@ -153,7 +240,6 @@ public class DataWriter {
     public boolean readFromTable(String username) {
         Map<String, String> attributeNames = new HashMap<>();
         attributeNames.put("#username", "username");
-
         Map<String, AttributeValue> attributeValues = new HashMap<>();
         attributeValues.put(":usernameValue", new AttributeValue().withS(username));
 
@@ -171,8 +257,47 @@ public class DataWriter {
         return false;
     }
 
-    @GetMapping("/election_id")
-    public String getElectionID(@RequestParam(value = "id")String id){
+    public String getSalt(String username){
+        Map<String, String> attributeNames = new HashMap<>();
+        attributeNames.put("#username", "username");
+        Map<String, AttributeValue> attributeValues = new HashMap<>();
+        attributeValues.put(":usernameValue", new AttributeValue().withS(username));
+
+        ScanRequest scanRequest = new ScanRequest()
+                .withTableName(ACCOUNT_TABLE)
+                .withFilterExpression("#username = :usernameValue")
+                .withExpressionAttributeNames(attributeNames)
+                .withExpressionAttributeValues(attributeValues);
+
+        ScanResult scanResult = dbClient.scan(scanRequest);
+
+        if (scanResult.getItems().size() > 0)
+            return scanResult.getItems().get(0).get("salt").getS();
+
+        return "";
+    }
+
+    public String getEncryptedPassword(String username){
+        Map<String, String> attributeNames = new HashMap<>();
+        attributeNames.put("#username", "username");
+        Map<String, AttributeValue> attributeValues = new HashMap<>();
+        attributeValues.put(":usernameValue", new AttributeValue().withS(username));
+
+        ScanRequest scanRequest = new ScanRequest()
+                .withTableName(ACCOUNT_TABLE)
+                .withFilterExpression("#username = :usernameValue")
+                .withExpressionAttributeNames(attributeNames)
+                .withExpressionAttributeValues(attributeValues);
+
+        ScanResult scanResult = dbClient.scan(scanRequest);
+
+        if (scanResult.getItems().size() > 0)
+            return scanResult.getItems().get(0).get("password").getS();
+
+        return "";
+    }
+
+    public String getElectionID(String id){
         Map<String, String> attributeNames = new HashMap<>();
         attributeNames.put("#id", "id");
 
@@ -197,8 +322,7 @@ public class DataWriter {
      * Given an account, write it to the database.
      * @param account
      */
-    @PutMapping("/new_user")
-    public String writeToTable(@RequestBody Account account){
+    public String writeToTable(Account account){
         String accountID = UUID.randomUUID().toString();
         Item accountItem = new Item()
                 .withString("id", accountID)
@@ -208,13 +332,14 @@ public class DataWriter {
                 .withString("question", account.question.question)
                 .withString("answer", account.question.answer)
                 .withString("dateOfCreation", account.dateOfCreation.toString())
-                .withString("voter", Boolean.toString(account.voter));
+                .withString("voter", Boolean.toString(account.voter))
+                .withString("salt", account.getSalt());
 
         dynamoDB.getTable(ACCOUNT_TABLE).putItem(accountItem);
         return accountID;
     }
 
-    public ResponseEntity<HttpStatus> writeToTable(Registration registration){
+    public void writeToTable(Registration registration){
         Item registrationItem = new Item()
                 .withString("id", registration.registrationID)
                 .withString("fname", registration.fName)
@@ -225,8 +350,6 @@ public class DataWriter {
                 .withBoolean("resident", registration.residency)
                 .withBoolean("felon", registration.felony);
         dynamoDB.getTable(REGISTRATION_TABLE).putItem(registrationItem);
-
-        return ResponseEntity.ok(HttpStatus.OK);
     }
 
     public ResponseEntity<HttpStatus> registerForElection(String electionID, String userID){
@@ -247,8 +370,7 @@ public class DataWriter {
         }
     }
 
-    @PostMapping("/update_username")
-    public ResponseEntity<HttpStatus> updateUsername(@RequestParam(value = "name")String newName, @RequestParam(value = "id")String id){
+    public ResponseEntity<HttpStatus> updateUsername(String newName, String id){
         UpdateItemSpec updateItemSpec= new UpdateItemSpec().withPrimaryKey("id", id)
                 .withUpdateExpression("set username = :newname")
                 .withValueMap(new ValueMap().withString(":newname", newName));
@@ -256,8 +378,7 @@ public class DataWriter {
         return ResponseEntity.ok(HttpStatus.OK);
     }
 
-    @PostMapping("/update_password")
-    public ResponseEntity<HttpStatus> updatePassword(@RequestParam(value = "password")String newPassword, @RequestParam(value = "id")String id){
+    public ResponseEntity<HttpStatus> updatePassword(String newPassword, String id){
         UpdateItemSpec updateItemSpec = new UpdateItemSpec().withPrimaryKey("id", id)
                 .withUpdateExpression("set password = :password")
                 .withValueMap(new ValueMap().withString(":password", newPassword));
@@ -341,15 +462,14 @@ public class DataWriter {
         }
     }
 
-    @GetMapping("/view_reg")
-    public ResponseEntity<VoterRegistration> viewVoterRegistration(@RequestParam(value = "id")String id){
+    public VoterRegistration viewVoterRegistration(String id){
         GetItemSpec getItemSpec = new GetItemSpec().withPrimaryKey("id", id);
         Item item = dynamoDB.getTable(REGISTRATION_TABLE).getItem(getItemSpec);
         VoterRegistration voterReg = new VoterRegistration(item.get("fname").toString(), item.get("lname").toString(),
                                                            item.get("age").toString(), item.get("email").toString(),
                                                            item.get("citizen").toString(), item.get("resident").toString(),
                                                            item.get("felon").toString());
-        return ResponseEntity.status(HttpStatus.OK).body(voterReg);
+        return voterReg;
     }
 
     public class ElectionResult{
@@ -378,8 +498,7 @@ public class DataWriter {
         }
     }
 
-    @GetMapping("/view_results")
-    public ResponseEntity<List<ElectionResult>> viewElectionResults(@RequestParam(value = "id")String id){
+    public ResponseEntity<List<ElectionResult>> viewElectionResults(String id){
         List<ElectionResult> electionResults = new ArrayList<>();
         GetItemSpec getItemSpec = new GetItemSpec().withPrimaryKey("id", id);
         Item item = dynamoDB.getTable(ACCOUNT_TABLE).getItem(getItemSpec);
@@ -394,8 +513,7 @@ public class DataWriter {
         return ResponseEntity.status(HttpStatus.OK).body(electionResults);
     }
 
-    @PostMapping("/cast_vote")
-    public void castVote(@RequestParam(value = "id")String id, @RequestParam(value = "eid")String electionID, @RequestParam(value = "candidate")int candidate){
+    public boolean castVote(String id, String electionID, int candidate){
         GetItemSpec getItemSpec = new GetItemSpec().withPrimaryKey("id", id);
         Item item = dynamoDB.getTable(ACCOUNT_TABLE).getItem(getItemSpec);
         Map<String, Boolean> electionMap = item.getMap("elections");
@@ -416,31 +534,9 @@ public class DataWriter {
                     .withUpdateExpression("set results = :results")
                     .withValueMap(new ValueMap().withMap(":results", resultsMap));
             dynamoDB.getTable(ELECTIONS_TABLE).updateItem(updateElectionSpec);
+            return true;
         }
+        return false;
     }
-
-    @GetMapping("/get_candidates")
-    public void printCandidates(@RequestParam(value = "id")String id){
-        GetItemSpec getItemSpec = new GetItemSpec().withPrimaryKey("id", id);
-        Item item = dynamoDB.getTable(ACCOUNT_TABLE).getItem(getItemSpec);
-        Map<String, Boolean> electionMap = item.getMap("elections");
-        String[] electionIDs = electionMap.keySet().toArray(new String[electionMap.size()]);
-        for(int i = 0; i < electionIDs.length; i++){
-            GetItemSpec getElectionSpec = new GetItemSpec().withPrimaryKey("electionID", electionIDs[i]);
-            Item electionItem = dynamoDB.getTable(ELECTIONS_TABLE).getItem(getElectionSpec);
-            System.out.printf("com.example.main.Election #%s\n", electionItem.get("id").toString());
-            Map<String, Integer> resultsMap = electionItem.getMap("results");
-            Iterator mapIterator = resultsMap.entrySet().iterator();
-            int count = 1;
-            while (mapIterator.hasNext()){
-                Map.Entry element = (Map.Entry)mapIterator.next();
-                System.out.println("Enter (" + count + ") to vote for " + element.getKey().toString());
-                count++;
-            }
-            System.out.println("");
-        }
-
-    }
-
 
 }

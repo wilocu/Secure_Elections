@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>Online Voting</title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+    <style>
+        input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #996633;
+            border-radius: 3px;
+            box-sizing: border-box;
+            margin-top: 6px;
+            margin-bottom: 6px;
+        }
+
+        .container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            -moz-transform: translateX(-50%) translateY(-50%);
+            -webkit-transform: translateX(-50%) translateY(-50%);
+            transform: translateX(-50%) translateY(-50%);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <form action="go_home" method="post" th:object="${user}">
+            <input type="text" hidden name="id" th:value="${user.id}">
+            <input type="text" hidden name="username" th:value="${user.username}">
+            <input type="text" hidden name="password" th:value="${user.password}">
+            <p th:text="${'First Name: ' + userProfile.fname}"></p>
+            <p th:text="${'Last Name: ' + userProfile.lname}"></p>
+            <p th:text="${'Age: ' + userProfile.age}"></p>
+            <p th:text="${'Email: ' + userProfile.email}"></p>
+            <p th:text="${'United States Citizen: ' + userProfile.citizen}"></p>
+            <p th:text="${'New York State Resident: ' + userProfile.resident}"></p>
+            <p th:text="${'Convicted of a Felony: ' + userProfile.felon}"></p>
+            <input type="submit" id="go_home_btn" value="Return to Main Page">
+        </form>
+    </div>
+</body>
+</html>
