@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+<head>
+    <title>Online Voting</title>
+    <meta http-equiv="Content-Type" content="text/html" charset="UTF-8">
+    <style>
+        input {
+            width:min-content;
+            padding: 10px;
+            border: 1px solid #996633;
+            border-radius: 3px;
+            box-sizing: border-box;
+            margin-top: 6px;
+            margin-bottom: 6px;
+        }
+        .register_container {
+            width: 50%;
+            display: inline;
+        }
+        .go_vote_container{
+            width: 50%;
+            display: inline;
+        }
+    </style>
+</head>
+<body>
+    <p th:text="${'Welcome ' + user.username + '!'}"></p>
+    <div class="register_container">
+        <h2>Register for an election:</h2>
+        <form action="election_reg" method=post th:object="${user}">
+            <label for="electionId">2024 Presidential Election</label>
+            <input type="text" hidden name="id" th:value="${user.id}">
+            <input type="text" hidden name="username" th:value="${user.username}">
+            <input type="text" hidden name="password" th:value="${user.password}">
+            <input type="checkbox" id="electionId" name="electionId" value = "7c6cf504-cbd2-4a68-8da8-e2b1f91d3b85">
+            <input type="submit" value="Register" disabled id="register_btn">
+            <h6 th:style="|display: ${already_registered}; color: red|" th:text="${already_registered_txt}" ></h6>
+            <h6 th:style="|display: ${not_registered}; color: green|" th:text="${already_registered_txt}"></h6>
+        </form>
+    </div>
+    <div class="container">
+        <form action="go_vote" method=post th:object="${user}">
+            <input type="text" hidden name="id" th:value="${user.id}">
+            <input type="text" hidden name="username" th:value="${user.username}">
+            <input type="text" hidden name="password" th:value="${user.password}">
+            <input type="submit" value="Go to Voting" id="go_vote_btn">
+        </form>
+    </div>
+    <div class="container">
+        <form action="view_profile" method=post th:object="${user}">
+            <input type="text" hidden name="id" th:value="${user.id}">
+            <input type="text" hidden name="username" th:value="${user.username}">
+            <input type="text" hidden name="password" th:value="${user.password}">
+            <input type="submit" value="View Profile" id="view_profile_btn">
+        </form>
+    </div>
+    <div class="container">
+        <form action="logout" method=post>
+            <input type="submit" value="Sign Out" id="logout_btn">
+        </form>
+    </div>
+<script>
+    var submitElectionReg = document.getElementById("electionId");
+    submitElectionReg.onclick = function(){
+        if(submitElectionReg.checked){
+            document.getElementById("register_btn").disabled = false;
+        }
+        else{
+            document.getElementById("register_btn").disabled = true;
+        }
+    }
+</script>
+</body>
+</html>

@@ -1,0 +1,35 @@
+# READ ME
+# PLD-secure-elections
+
+Group: PLD
+Members: Matt Pasetto, Will Lewis, Kelsey Dunn
+
+The Program:
+This program is meant to give users a secure way to vote from an online setting.
+Currently run from the command line.
+
+Demo guide:
+    In separate document DemoGuide.pdf
+
+How to run:
+	1. Navigate to directory "./PLD-secure-elections/main/src"
+	2. Compile using java: javac Main.java
+	3. Run using: java Main
+
+Current Functionality:
+	The program currently runs as a command line program that guides the user through the steps
+	to vote. It initially starts with the option to log in by entering "1" or create an account
+	by entering "2". If the user chooses to log in, they are prompted to enter their username
+	and password. These credentials are checked against a list to match an account. If the user
+	wants to create an account, they are prompted to create a username, password, and security
+	questions. Then they are asked questions to determine their voting eligibility.
+
+	- Only one user can be logged in at a time.
+
+Database:
+	Saves old accounts.
+	Saves election votes.
+	Saves information for accounts as well if they have voted or not yet.
+
+Website Frontend:
+	Not yet implemented.

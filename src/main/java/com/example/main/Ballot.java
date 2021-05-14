@@ -1,3 +1,5 @@
+package com.example.main;
+
 import java.util.Date;
 
 public class Ballot {

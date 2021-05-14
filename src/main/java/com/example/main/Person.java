@@ -1,3 +1,5 @@
+package com.example.main;
+
 public class Person {
 
     public String firstName;
